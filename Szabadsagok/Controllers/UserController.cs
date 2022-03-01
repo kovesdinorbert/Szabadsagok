@@ -1,0 +1,63 @@
+﻿using AutoMapper;
+using Core.Entities;
+using Core.Interfaces;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using System;
+using System.Threading.Tasks;
+using Szabadsagok.Dto;
+
+namespace Szabadsagok.Controllers
+{
+    [Authorize]
+    [Route("api/[controller]")]
+    [ApiController]
+    public class UserController : Controller
+    {
+        //private readonly ILogger<UserController> _logger;
+        private readonly IUserService _userService;
+        //private readonly IEventService _eventService;
+        private readonly IMapper _mapper;
+
+        public UserController(//ILogger<UserController> logger,
+                              IUserService userService,
+                              //IEventService eventService,
+                              IMapper mapper)
+        {
+            //_logger = logger;
+            _userService = userService;
+            _mapper = mapper;
+            //_eventService = eventService;
+        }
+
+        [AllowAnonymous]
+        [HttpPost("authenticate")]
+        [ProducesResponseType(typeof(LoginResultDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        public async Task<IActionResult> Authenticate(/*[FromBody] LoginDto login*/)
+        {
+            //var user = await _userService.Login(login.Email, login.Password);
+            var user = await _userService.GetUser(Guid.Parse("5eb91753-55b5-413a-8975-b34f610dcc6a"));
+            if (user != null)
+            {
+                var token = await _userService.GenerateToken(user);
+                return Ok(new LoginResultDto() { Email = user.Email, Id = user.Id, Token = token });
+            }
+
+            return Unauthorized();
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetUser()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> SetHoliday(Guid userId)
+        {
+            return View();
+        }
+    }
+}
