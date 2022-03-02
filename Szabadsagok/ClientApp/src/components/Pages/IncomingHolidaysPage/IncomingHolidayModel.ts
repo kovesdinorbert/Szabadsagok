@@ -1,11 +1,8 @@
-
-
-import { Guid } from 'guid-typescript';
+import { HolidayDistanceEnum } from './HolidayDistanceEnum';
 
 export class IncomingHolidayModel {
-    //userId?: Guid;
-    // token: string = "";
     start: Date | null = null;
     end: Date | null = null;
     userName: string = "";
+    distance: HolidayDistanceEnum = HolidayDistanceEnum.DistantFuture;
 }

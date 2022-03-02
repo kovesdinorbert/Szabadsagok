@@ -12,17 +12,14 @@ import { Toast } from 'primereact/toast';
 import { InputTextarea } from 'primereact/inputtextarea';
 import { Button } from 'primereact/button';
 
-// import './design.css';
 import InputField from '../../Common/InputField/InputField';
 import { InputFieldModel } from '../../Common/InputField/InputFieldModel';
 import { faEnvelopeSquare } from '@fortawesome/free-solid-svg-icons';
-import { IncomingHolidayModel } from './IncomingHolidayModel';
 import InputTextArea from '../../Common/InputTextArea/InputTextArea';
 import { InputTextAreaModel } from '../../Common/InputTextArea/InputTextAreaModel';
-import { DataTable } from 'primereact/datatable';
-import { Column } from 'primereact/column';
-import { HolidayDistanceEnum } from './HolidayDistanceEnum';
-import { start } from 'repl';
+import { InputNumericModel } from '../../Common/InputNumeric/InputNumericModel';
+import InputNumeric from '../../Common/InputNumeric/InputNumeric';
+import { UserDataModel } from './UserDataModel';
 // import '@fullcalendar/common/main.css';
 // import '@fullcalendar/daygrid/main.css';
 // import '@fullcalendar/timegrid/main.css';
@@ -35,16 +32,14 @@ import { start } from 'repl';
 //     typeof CounterStore.actionCreators &
 //     RouteComponentProps<{}>;
 
-export interface IState {
-    blocking: boolean;
-    holidays?: IncomingHolidayModel[];
-  }
-
 // PureComponent vs Component
-class IncomingHolidayPage extends React.PureComponent<any>/*<CounterProps>*/ {
+class EditUserPage extends React.PureComponent<any>/*<CounterProps>*/ {
 
-    public state: IState = { holidays: undefined,
-                             blocking : false};
+    public state: any = { formIsValid : false,
+                          blocking : false,
+                          holidays : 0,
+                          name : "",
+                          email: "" };
     token: string = "";
 
     // toast = useRef(null);
@@ -52,14 +47,16 @@ class IncomingHolidayPage extends React.PureComponent<any>/*<CounterProps>*/ {
 
     constructor(props: any) {
         super(props);
-        // this.mentesHandleClick = this.mentesHandleClick.bind(this);
-        // this.megseHandleClick = this.megseHandleClick.bind(this);
-        // this.showToast = this.showToast.bind(this);
-        // this.handleEmailChange = this.handleEmailChange.bind(this);
-        // this.reasonEnterPressed = this.reasonEnterPressed.bind(this);
-        // this.dateSelected = this.dateSelected.bind(this);
-        // this.setFormIsValid = this.setFormIsValid.bind(this);
-        // this.setReason = this.setReason.bind(this);
+        this.mentesHandleClick = this.mentesHandleClick.bind(this);
+        this.megseHandleClick = this.megseHandleClick.bind(this);
+        this.showToast = this.showToast.bind(this);
+        this.handleEmailChange = this.handleEmailChange.bind(this);
+        this.reasonEnterPressed = this.reasonEnterPressed.bind(this);
+        this.dateSelected = this.dateSelected.bind(this);
+        this.setFormIsValid = this.setFormIsValid.bind(this);
+        this.setEmail = this.setEmail.bind(this);
+        this.setName = this.setName.bind(this);
+        this.setHolidays = this.setHolidays.bind(this);
         this.sendRequest = this.sendRequest.bind(this);
         this.auth = this.auth.bind(this);
         
@@ -67,11 +64,54 @@ class IncomingHolidayPage extends React.PureComponent<any>/*<CounterProps>*/ {
         this.auth();
       }
 
+    private dateSelected (e: DateSelectArg): void {
+        this.setState({ start: moment(e.start).add(1,'hour').utc(), end: moment(e.end).utc()});
+        // this.setState({ start: moment(e.start).add(1,'hour'), end: moment(e.end).add(-1,'hour')});
+        this.setFormIsValid();
+    }
+
+
+    private setEmail (e: string): void {
+        this.setState({email: e});
+        this.setFormIsValid();
+    }
+
+    private setName (e: string): void {
+        this.setState({name: e});
+        this.setFormIsValid();
+    }
+
+    private setHolidays (e: number): void {
+      debugger;
+        this.setState({holidays: e});
+        this.setFormIsValid();
+    }
+
+    private setFormIsValid() {
+        this.setState({formIsValid : this.state.name && this.state.email});
+    }
+
+    private mentesHandleClick(){
+        this.showToast('success', 'Success Message', 'Order submitted');
+    }
+
+    private megseHandleClick(){
+        this.showToast('info', 'Nem Success Message', 'Nem Order submitted');
+    }
+
+    private reasonEnterPressed(){
+        // this.showToast('info', 'Email enter pressed', 'Email enter pressed');
+        this.sendRequest();
+    }
 
     private showToast(severity: string, summary: string, detail: string){
         if (this.toast.current !== null)
             this.toast.current.show({severity: severity, summary: summary, detail: detail, life: 3000});
     }
+
+    private handleEmailChange(email: string) {
+        this.setState({email : email});
+      }
 
       private auth() {
         let url = `${process.env.REACT_APP_API_PATH}/user/authenticate`;
@@ -95,9 +135,9 @@ class IncomingHolidayPage extends React.PureComponent<any>/*<CounterProps>*/ {
             if (!response.ok) {
                 this.showToast('error', 'Sikertelen művelet', 'Sikertelen művelet');
               } else {
+                debugger;
                 response.json().then((resp: any) => {
                   this.token = resp.token;
-                  this.sendRequest();
                   this.showToast('success', 'Sikeres művelet', 'Sikeres művelet');
                 });
                 // this.token = response.formData().token;
@@ -110,14 +150,23 @@ class IncomingHolidayPage extends React.PureComponent<any>/*<CounterProps>*/ {
       }
 
     private sendRequest() {
-        let url = `${process.env.REACT_APP_API_PATH}/holiday`;
+        if (!this.state.formIsValid) {
+          return;
+        }
+  // debugger;
+        let url = `${process.env.REACT_APP_API_PATH}/user/createuser`;
         this.setState({blocking: true});
         
+        let userDataReq: UserDataModel = {
+          name: this.state.name,
+          email: this.state.email,
+        }
         const requestOptions = {
-          method: 'GET',
+          method: 'PUT',
           headers: { 'Content-Type': 'application/json', 
                     'Authorization': 'Bearer ' + this.token 
-                }
+                },
+          body: JSON.stringify(userDataReq)
         };
           
         fetch(url, requestOptions)
@@ -125,17 +174,6 @@ class IncomingHolidayPage extends React.PureComponent<any>/*<CounterProps>*/ {
             if (!response.ok) {
                 this.showToast('error', 'Sikertelen művelet', 'Sikertelen művelet');
               } else {
-                const data: IncomingHolidayModel[] = await response.json();
-                this.setState({holidays: data.map((d:IncomingHolidayModel) => (
-                {
-                    start : d.start, 
-                    end : d.end, 
-                    distance : moment().add(7, 'days').isAfter(moment(d.start)) 
-                               ? HolidayDistanceEnum.Near
-                               : moment().add(1, 'months').isAfter(moment(d.start))
-                                  ? HolidayDistanceEnum.Future
-                                  : HolidayDistanceEnum.DistantFuture
-                }))});
                 this.showToast('success', 'Sikeres művelet', 'Sikeres művelet');
               }
               this.setState({body: "", blocking: false, subject : "", name : "", email: "", showMessage: true });
@@ -146,27 +184,55 @@ class IncomingHolidayPage extends React.PureComponent<any>/*<CounterProps>*/ {
       }
 
     public render() {
-        let confReason : InputTextAreaModel = {
+        let confEmail : InputFieldModel = {
             label: 'Email cím',
             id: "email_id",
             required: true,
-            rows: 5,
-            cols: 30,
+            email: true,
             icon: {icon: faEnvelopeSquare},
             type: 'email',
           }; 
+          let confName : InputFieldModel = {
+              label: 'Név',
+              id: "name_id",
+              required: true,
+              icon: {icon: faEnvelopeSquare},
+              type: 'text',
+            }; 
+            let confAvailableHolidays : InputNumericModel = {
+                label: 'Elhasználható szabadság',
+                id: "availableholidays_id",
+                required: true,
+                min: 1,
+                max: 40,
+                icon: {icon: faEnvelopeSquare},
+                type: 'text',
+              }; 
 
         return (
             <React.Fragment>
-                <h1>Szabadságok</h1>
-                {this.state.holidays 
-                ? <DataTable value={this.state.holidays}>
-                    <Column field="start" header="start"></Column>
-                    <Column field="end" header="end"></Column>
-                    <Column field="userName" header="userName"></Column>
-                    <Column field="distance" header="distance"></Column>
-                  </DataTable>
-                : <></>}
+                <h1>Userek</h1>
+                <div>
+                    <InputField config={confEmail} value={this.state.email} 
+                                   onInputValueChange={this.setEmail}/>
+                </div>
+                <div>
+                    <InputField config={confName} value={this.state.name} 
+                                   onInputValueChange={this.setName}/>
+                </div>
+                <div>
+                    <InputNumeric config={confAvailableHolidays} value={this.state.holidays} 
+                                   onInputValueChange={this.setHolidays}/>
+                </div>
+                {/* <div>
+                    <><InputField config={confEmail} value={this.state.email} onInputValueChange={this.handleEmailChange} enterPressed={this.emailEnterPressed}></InputField></>
+                </div> */}
+                <Button disabled={!this.state.formIsValid} className="btn-action" onClick={this.sendRequest}>Mentés</Button>
+                <Button className="btn-action" onClick={this.props.onModalClose}>Mégse</Button>
+                {/* <div>
+                    <Button label="Mentés" onClick={this.mentesHandleClick} />
+                    <Button label="Mégse" onClick={this.megseHandleClick} />
+                </div> */}
                 <Toast ref={this.toast} />
             </React.Fragment>
         );
@@ -176,4 +242,4 @@ class IncomingHolidayPage extends React.PureComponent<any>/*<CounterProps>*/ {
 export default connect(
     // (state: ApplicationState) => state.counter,
     // CounterStore.actionCreators
-)(IncomingHolidayPage);
+)(EditUserPage);

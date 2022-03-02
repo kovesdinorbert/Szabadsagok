@@ -5,8 +5,11 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
+using System.Collections.Generic;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using Szabadsagok.Dto;
+using Szabadsagok.Helpers;
 
 namespace Szabadsagok.Controllers
 {
@@ -54,10 +57,73 @@ namespace Szabadsagok.Controllers
             return View();
         }
 
-        [HttpPost]
+        [HttpGet("getallusers")]
+        [ProducesResponseType(typeof(IEnumerable<UserListDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> GetAllUsers()
+        {
+            var idStr = ClaimHelper.GetClaimData(User, ClaimTypes.NameIdentifier);
+
+            if (string.IsNullOrWhiteSpace(idStr) || !Guid.TryParse(idStr, out var userId))
+            {
+                return Unauthorized();
+            }
+
+            List<UserListDto> ret;
+            try
+            {
+                ret = _mapper.Map<List<UserListDto>>(await _userService.GetUsers());
+            }
+            catch (Exception e)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError);
+            }
+
+            return Ok(ret);
+        }
+
+        [HttpPost("setholiday/{userId}")]
         public async Task<IActionResult> SetHoliday(Guid userId)
         {
             return View();
+        }
+
+        [HttpPost("updateuser")]
+        public async Task<IActionResult> UpdateUser(UserDataDto userData)
+        {
+            return View();
+        }
+
+        [HttpPut("createuser")]
+        [ProducesResponseType(typeof(UserDataDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> CreateUser(UserDataDto userData)
+        {
+            var idStr = ClaimHelper.GetClaimData(User, ClaimTypes.NameIdentifier);
+
+            if (string.IsNullOrWhiteSpace(idStr) || !Guid.TryParse(idStr, out var userId))
+            {
+                return Unauthorized();
+            }
+
+            UserDataDto ret;
+
+            try
+            {
+                ret =_mapper.Map<UserDataDto>(await _userService.CreateUser(userData.Name, userData.Email, userId));
+                if (ret == null || ret.Id == Guid.Empty)
+                {
+                    return StatusCode(StatusCodes.Status500InternalServerError);
+                }
+            }
+            catch (Exception e)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError);
+            }
+
+            return Ok(ret);
         }
     }
 }

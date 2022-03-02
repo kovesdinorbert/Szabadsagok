@@ -8,7 +8,7 @@ namespace Core.Interfaces
     public interface IUserService
     {
         Task<string> GenerateToken(User user);
-        Task CreateUser(string name, string email, Guid currentUserId);
+        Task<User> CreateUser(string name, string email, Guid currentUserId);
         Task UpdateUser(Guid userId, string name, string email, Guid currentUserId);
         Task<List<User>> GetUsers();
         Task<User> GetUser(Guid userId);

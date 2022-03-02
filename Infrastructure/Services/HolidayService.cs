@@ -51,7 +51,9 @@ namespace Infrastructure.Services
             {
                 source => source.Include(m => m.User),
             };
-            return await _holidayRepository.FindAllAsync(h => h.Start >= DateTime.Today && h.IsActive, includes);
+
+            var holidays = await _holidayRepository.FindAllAsync(h => h.Start >= DateTime.Today && h.IsActive, includes);
+            return holidays.OrderBy(h => h.Start).ToList();
         }
 
         public async Task UpdateStatusHoliday(Guid holidayId, StatusEnum status, Guid currentUserId)

@@ -89,18 +89,21 @@ namespace Infrastructure.Services
             }
         }
 
-        public async Task CreateUser(string name, string email, Guid currentUserId)
+        public async Task<User> CreateUser(string name, string email, Guid currentUserId)
         {
+            var user = new User()
+            {
+                Deleted = false,
+                Role = Core.Enums.RoleEnum.Common
+            };
             if (!string.IsNullOrWhiteSpace(name) && !string.IsNullOrWhiteSpace(email))
             {
-                await _userRepository.CreateAsync(new User()
-                {
-                    Name = name,
-                    Email = email,
-                    Deleted = false,
-                    Role = Core.Enums.RoleEnum.Common
-                }, currentUserId);
+                user.Name = name;
+                user.Email = email;
+
+                await _userRepository.CreateAsync(user, currentUserId);
             }
+            return user;
         }
 
         public async Task UpdateUser(Guid userId, string name, string email, Guid currentUserId)
