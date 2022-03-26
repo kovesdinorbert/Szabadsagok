@@ -16,6 +16,7 @@ namespace Szabadsagok.App_Conf
                 .ForMember(dst => dst.UserName, opt => opt.MapFrom(src => src.User.Name));
             CreateMap<User, UserDataDto>();
             CreateMap<User, UserListDto>();
+            CreateMap<UserDataDto, User>();
             //CreateMap<EventDto, Event>()
             //    .ForMember(dst => dst.Modified, opt => opt.MapFrom(src => DateTime.Now))
             //    .ForMember(dst => dst.IsActive, opt => opt.Ignore())

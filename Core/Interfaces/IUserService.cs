@@ -9,7 +9,7 @@ namespace Core.Interfaces
     {
         Task<string> GenerateToken(User user);
         Task<User> CreateUser(string name, string email, Guid currentUserId);
-        Task UpdateUser(Guid userId, string name, string email, Guid currentUserId);
+        Task UpdateUser(User user, Guid currentUserId);
         Task<List<User>> GetUsers();
         Task<User> GetUser(Guid userId);
         Task<User> GetUserByEmail(string email);

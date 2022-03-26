@@ -60,6 +60,6 @@ class FetchData extends React.PureComponent<WeatherForecastProps> {
 }
 
 export default connect(
-  (state: ApplicationState) => state.weatherForecasts, // Selects which state properties are merged into the component's props
+  (state: ApplicationState) => state.appContext, // Selects which state properties are merged into the component's props
   WeatherForecastsStore.actionCreators // Selects which action creators are merged into the component's props
 )(FetchData as any); // eslint-disable-line @typescript-eslint/no-explicit-any

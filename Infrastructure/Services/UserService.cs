@@ -106,16 +106,18 @@ namespace Infrastructure.Services
             return user;
         }
 
-        public async Task UpdateUser(Guid userId, string name, string email, Guid currentUserId)
+        public async Task UpdateUser(User user, Guid currentUserId)
         {
-            if (!string.IsNullOrWhiteSpace(name) && !string.IsNullOrWhiteSpace(email))
+            if (!string.IsNullOrWhiteSpace(user.Name) 
+                && !string.IsNullOrWhiteSpace(user.Email)
+                && user.Id != Guid.Empty)
             {
-                var user = await _userRepository.FindByIdAsync(userId); 
+                var dbuser = await _userRepository.FindByIdAsync(user.Id); 
                 if (user != null)
                 {
-                    user.Name = name;
-                    user.Email = email;
-                    await _userRepository.UpdateAsync(user, currentUserId);
+                    dbuser.Name = user.Name;
+                    dbuser.Email = user.Email;
+                    await _userRepository.UpdateAsync(dbuser, currentUserId);
                 }
             }
         }

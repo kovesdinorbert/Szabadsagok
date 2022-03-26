@@ -1,245 +1,253 @@
-import React, { PureComponent, RefObject, useRef, useState } from 'react';
+import React, { RefObject } from 'react';
 import { connect } from 'react-redux';
-import { RouteComponentProps } from 'react-router';
-import { Calendar } from 'primereact/calendar';
-import { Dropdown } from 'primereact/dropdown';
-import { addLocale } from 'primereact/api';
-import FullCalendar, { DateSelectArg } from '@fullcalendar/react';
-import dayGridPlugin from '@fullcalendar/daygrid';
-import interactionPlugin from '@fullcalendar/interaction';
-import moment from 'moment';
 import { Toast } from 'primereact/toast';
-import { InputTextarea } from 'primereact/inputtextarea';
 import { Button } from 'primereact/button';
-
 import InputField from '../../Common/InputField/InputField';
 import { InputFieldModel } from '../../Common/InputField/InputFieldModel';
 import { faEnvelopeSquare } from '@fortawesome/free-solid-svg-icons';
-import InputTextArea from '../../Common/InputTextArea/InputTextArea';
-import { InputTextAreaModel } from '../../Common/InputTextArea/InputTextAreaModel';
 import { InputNumericModel } from '../../Common/InputNumeric/InputNumericModel';
 import InputNumeric from '../../Common/InputNumeric/InputNumeric';
 import { UserDataModel } from './UserDataModel';
-// import '@fullcalendar/common/main.css';
-// import '@fullcalendar/daygrid/main.css';
-// import '@fullcalendar/timegrid/main.css';
-// import '@fullcalendar/list/main.css';
-// import { ApplicationState } from '../store';
-// import * as CounterStore from '../store/Counter';
+import { Guid } from 'guid-typescript';
+import * as UserStore from '../../../store/UserStore';
 
-// type CounterProps =
-//     CounterStore.CounterState &
-//     typeof CounterStore.actionCreators &
-//     RouteComponentProps<{}>;
+class EditUserPage extends React.Component<any> {
 
-// PureComponent vs Component
-class EditUserPage extends React.PureComponent<any>/*<CounterProps>*/ {
+  public state: any = {
+    formIsValid: false,
+    blocking: false,
+    holidays: 0,
+    user: { name: "", email: "", id: Guid.EMPTY }
+  };
+  token: string = "";
+  user :UserDataModel = { name: "", email: "", id: Guid.parse(Guid.EMPTY) };
+  isValidDict: {[key: string]: boolean} = {name: true, email: true};
 
-    public state: any = { formIsValid : false,
-                          blocking : false,
-                          holidays : 0,
-                          name : "",
-                          email: "" };
-    token: string = "";
+  toast: RefObject<Toast>;
 
-    // toast = useRef(null);
-    toast : RefObject<Toast>;
-
-    constructor(props: any) {
-        super(props);
-        this.mentesHandleClick = this.mentesHandleClick.bind(this);
-        this.megseHandleClick = this.megseHandleClick.bind(this);
-        this.showToast = this.showToast.bind(this);
-        this.handleEmailChange = this.handleEmailChange.bind(this);
-        this.reasonEnterPressed = this.reasonEnterPressed.bind(this);
-        this.dateSelected = this.dateSelected.bind(this);
-        this.setFormIsValid = this.setFormIsValid.bind(this);
-        this.setEmail = this.setEmail.bind(this);
-        this.setName = this.setName.bind(this);
-        this.setHolidays = this.setHolidays.bind(this);
-        this.sendRequest = this.sendRequest.bind(this);
-        this.auth = this.auth.bind(this);
-        
-        this.toast = React.createRef();
-        this.auth();
-      }
-
-    private dateSelected (e: DateSelectArg): void {
-        this.setState({ start: moment(e.start).add(1,'hour').utc(), end: moment(e.end).utc()});
-        // this.setState({ start: moment(e.start).add(1,'hour'), end: moment(e.end).add(-1,'hour')});
-        this.setFormIsValid();
+  constructor(props: any) {
+    super(props);
+    this.mentesHandleClick = this.mentesHandleClick.bind(this);
+    this.megseHandleClick = this.megseHandleClick.bind(this);
+    this.showToast = this.showToast.bind(this);
+    this.reasonEnterPressed = this.reasonEnterPressed.bind(this);
+    this.setFormIsValid = this.setFormIsValid.bind(this);
+    this.setEmail = this.setEmail.bind(this);
+    this.setName = this.setName.bind(this);
+    this.setHolidays = this.setHolidays.bind(this);
+    this.sendRequest = this.sendRequest.bind(this);
+    this.auth = this.auth.bind(this);
+    this.toast = React.createRef();
+    if (props.selectedUser && props.selectedUser[0]) {
+      this.user = {...props.selectedUser[0]};
+    } else {
+      this.user = { id: Guid.parse(Guid.EMPTY), email: '', name: '' };
     }
-
-
-    private setEmail (e: string): void {
-        this.setState({email: e});
-        this.setFormIsValid();
+  }
+  
+  componentDidMount() {
+    if (!this.props.token) {
+     this.auth();
+    } else {
+      this.token = this.props.token;
+      this.sendRequest();
     }
+  }
 
-    private setName (e: string): void {
-        this.setState({name: e});
-        this.setFormIsValid();
+  private setEmail(e: string, v: boolean): void {
+    this.user.email = e;
+    this.isValidDict["email"] = v;
+     
+     this.setFormIsValid();
     }
-
-    private setHolidays (e: number): void {
-      debugger;
-        this.setState({holidays: e});
-        this.setFormIsValid();
+    
+    private setName(e: string, v: boolean): void {
+      this.user.name = e;
+      this.isValidDict["name"] = v;
+      
+      this.setFormIsValid();
     }
+    
+    private setHolidays(e: number, v: boolean): void {
+    this.setFormIsValid();
+  }
 
-    private setFormIsValid() {
-        this.setState({formIsValid : this.state.name && this.state.email});
-    }
+  private setFormIsValid() {
+    this.setState({ formIsValid: Object.keys(this.isValidDict).filter(key => !this.isValidDict[key]).length === 0 });
+  }
 
-    private mentesHandleClick(){
-        this.showToast('success', 'Success Message', 'Order submitted');
-    }
+  private mentesHandleClick() {
+    this.showToast('success', 'Success Message', 'Order submitted');
+  }
 
-    private megseHandleClick(){
-        this.showToast('info', 'Nem Success Message', 'Nem Order submitted');
-    }
+  private megseHandleClick() {
+    this.showToast('info', 'Nem Success Message', 'Nem Order submitted');
+  }
 
-    private reasonEnterPressed(){
-        // this.showToast('info', 'Email enter pressed', 'Email enter pressed');
-        this.sendRequest();
-    }
+  private reasonEnterPressed() {
+    this.sendRequest();
+  }
 
-    private showToast(severity: string, summary: string, detail: string){
-        if (this.toast.current !== null)
-            this.toast.current.show({severity: severity, summary: summary, detail: detail, life: 3000});
-    }
+  private showToast(severity: string, summary: string, detail: string) {
+    if (this.toast.current !== null)
+      this.toast.current.show({ severity: severity, summary: summary, detail: detail, life: 3000 });
+  }
 
-    private handleEmailChange(email: string) {
-        this.setState({email : email});
-      }
+  private auth() {
+    let url = `${process.env.REACT_APP_API_PATH}/user/authenticate`;
+    this.setState({ blocking: true });
 
-      private auth() {
-        let url = `${process.env.REACT_APP_API_PATH}/user/authenticate`;
-        this.setState({blocking: true});
-        
-        // let holidayReq: HolidayRequestModel = {
-        //   start: this.state.start,
-        //   end: this.state.end,
-        //   reason: this.state.reason
-        // }
-        const requestOptions = {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 
-                    //  'Authorization': 'Bearer ' + this.authenticationService.instance().currentUserSubject.getValue().token 
-                },
-          // body: JSON.stringify(holidayReq)
-        };
-          
-        fetch(url, requestOptions)
-          .then(async response => {
-            if (!response.ok) {
-                this.showToast('error', 'Sikertelen művelet', 'Sikertelen művelet');
-              } else {
-                debugger;
-                response.json().then((resp: any) => {
-                  this.token = resp.token;
-                  this.showToast('success', 'Sikeres művelet', 'Sikeres művelet');
-                });
-                // this.token = response.formData().token;
-              }
-              this.setState({body: "", blocking: false, subject : "", name : "", email: "", showMessage: true });
-            })
-            .catch(error => {
-                this.showToast('error', 'Sikertelen művelet', 'Sikertelen művelet');
-            });
-      }
+    const requestOptions = {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+    };
 
-    private sendRequest() {
-        if (!this.state.formIsValid) {
-          return;
+    fetch(url, requestOptions)
+      .then(async response => {
+        if (!response.ok) {
+          this.showToast('error', 'Sikertelen művelet', 'Sikertelen művelet');
+        } else {
+          response.json().then((resp: any) => {
+            this.token = resp.token;
+            this.showToast('success', 'Sikeres művelet', 'Sikeres művelet');
+          });
         }
-  // debugger;
-        let url = `${process.env.REACT_APP_API_PATH}/user/createuser`;
-        this.setState({blocking: true});
-        
-        let userDataReq: UserDataModel = {
-          name: this.state.name,
-          email: this.state.email,
-        }
-        const requestOptions = {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json', 
-                    'Authorization': 'Bearer ' + this.token 
-                },
-          body: JSON.stringify(userDataReq)
-        };
-          
-        fetch(url, requestOptions)
-          .then(async response => {
-            if (!response.ok) {
-                this.showToast('error', 'Sikertelen művelet', 'Sikertelen művelet');
-              } else {
-                this.showToast('success', 'Sikeres művelet', 'Sikeres művelet');
-              }
-              this.setState({body: "", blocking: false, subject : "", name : "", email: "", showMessage: true });
-            })
-            .catch(error => {
-                this.showToast('error', 'Sikertelen művelet', 'Sikertelen művelet');
-            });
-      }
+        this.setState({ body: "", blocking: false, subject: "", showMessage: true });
+      })
+      .catch(error => {
+        this.showToast('error', 'Sikertelen művelet', 'Sikertelen művelet');
+      });
+  }
 
-    public render() {
-        let confEmail : InputFieldModel = {
-            label: 'Email cím',
-            id: "email_id",
-            required: true,
-            email: true,
-            icon: {icon: faEnvelopeSquare},
-            type: 'email',
-          }; 
-          let confName : InputFieldModel = {
-              label: 'Név',
-              id: "name_id",
-              required: true,
-              icon: {icon: faEnvelopeSquare},
-              type: 'text',
-            }; 
-            let confAvailableHolidays : InputNumericModel = {
-                label: 'Elhasználható szabadság',
-                id: "availableholidays_id",
-                required: true,
-                min: 1,
-                max: 40,
-                icon: {icon: faEnvelopeSquare},
-                type: 'text',
-              }; 
-
-        return (
-            <React.Fragment>
-                <h1>Userek</h1>
-                <div>
-                    <InputField config={confEmail} value={this.state.email} 
-                                   onInputValueChange={this.setEmail}/>
-                </div>
-                <div>
-                    <InputField config={confName} value={this.state.name} 
-                                   onInputValueChange={this.setName}/>
-                </div>
-                <div>
-                    <InputNumeric config={confAvailableHolidays} value={this.state.holidays} 
-                                   onInputValueChange={this.setHolidays}/>
-                </div>
-                {/* <div>
-                    <><InputField config={confEmail} value={this.state.email} onInputValueChange={this.handleEmailChange} enterPressed={this.emailEnterPressed}></InputField></>
-                </div> */}
-                <Button disabled={!this.state.formIsValid} className="btn-action" onClick={this.sendRequest}>Mentés</Button>
-                <Button className="btn-action" onClick={this.props.onModalClose}>Mégse</Button>
-                {/* <div>
-                    <Button label="Mentés" onClick={this.mentesHandleClick} />
-                    <Button label="Mégse" onClick={this.megseHandleClick} />
-                </div> */}
-                <Toast ref={this.toast} />
-            </React.Fragment>
-        );
+  private sendRequest() {
+    if (!this.state.formIsValid) {
+      return;
     }
+    
+this.props.setLoadingState(true);
+
+    let url = ``;
+    this.setState({ blocking: true });
+
+    let userDataReq: UserDataModel = this.user;
+    let requestOptions = {};
+
+    if (userDataReq.id && userDataReq.id.toString() !== Guid.EMPTY) {
+      url = `${process.env.REACT_APP_API_PATH}/user/updateuser`;
+      requestOptions = {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + this.token
+        },
+        body: JSON.stringify(userDataReq)
+      };
+      fetch(url, requestOptions)
+        .then(async response => {
+          if (!response.ok) {
+            this.showToast('error', 'Sikertelen művelet', 'Sikertelen művelet');
+          } else {
+            this.showToast('success', 'Sikeres művelet', 'Sikeres művelet');
+          }
+          this.setState({ body: "", blocking: false, subject: "", showMessage: true });
+          this.props.setLoadingState(false);
+          this.props.updateListCb(this.user);
+        })
+        .catch(error => {
+          this.showToast('error', 'Sikertelen művelet', 'Sikertelen művelet');
+          this.props.setLoadingState(false);
+        });
+    } else {
+      url = `${process.env.REACT_APP_API_PATH}/user/createuser`;
+      requestOptions = {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + this.token
+        },
+        body: JSON.stringify(userDataReq)
+      };
+      fetch(url, requestOptions)
+        .then(async response => {
+          if (!response.ok) {
+            this.showToast('error', 'Sikertelen művelet', 'Sikertelen művelet');
+          } else {
+            var data: UserDataModel = await response.json();
+            this.setState({ user: data });
+            this.showToast('success', 'Sikeres művelet', 'Sikeres művelet');
+          }
+          this.setState({ body: "", blocking: false, subject: "", showMessage: true });
+          this.props.updateListCb(this.user);
+          this.props.setLoadingState(false);
+        })
+        .catch(error => {
+          this.showToast('error', 'Sikertelen művelet', 'Sikertelen művelet');
+          this.props.setLoadingState(false);
+        });
+    }
+
+
+  }
+
+  public render() {
+    let confEmail: InputFieldModel = {
+      label: 'Email cím',
+      id: "email_id",
+      required: true,
+      email: true,
+      icon: { icon: faEnvelopeSquare },
+      type: 'email',
+    };
+    let confName: InputFieldModel = {
+      label: 'Név',
+      id: "name_id",
+      required: true,
+      icon: { icon: faEnvelopeSquare },
+      type: 'text',
+    };
+    let confAvailableHolidays: InputNumericModel = {
+      label: 'Elhasználható szabadság',
+      id: "availableholidays_id",
+      required: true,
+      min: 1,
+      max: 40,
+      icon: { icon: faEnvelopeSquare },
+      type: 'text',
+    };
+
+    return (
+      <React.Fragment>
+        <h1>Userek</h1>
+        <div>
+          <InputField config={confEmail} value={this.user.email}
+            onInputValueChange={this.setEmail} />
+        </div>
+        <div>
+          <InputField config={confName} value={this.user.name}
+            onInputValueChange={this.setName} />
+        </div>
+        <div>
+          <InputNumeric config={confAvailableHolidays} value={this.state.holidays}
+            onInputValueChange={this.setHolidays} />
+        </div>
+        <Button disabled={!this.state.formIsValid} className="btn-action" onClick={this.sendRequest}>Mentés</Button>
+        <Button className="btn-action" onClick={this.props.onModalClose}>Mégse</Button>
+        <Toast ref={this.toast} />
+      </React.Fragment>
+    );
+  }
 };
 
+function mapStateToProps(state :any) {
+  const token = state.user.token;
+  return {
+    token
+  };
+}
+
 export default connect(
-    // (state: ApplicationState) => state.counter,
-    // CounterStore.actionCreators
+  mapStateToProps,
+  UserStore.actionCreators
 )(EditUserPage);
