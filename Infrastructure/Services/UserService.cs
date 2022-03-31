@@ -69,7 +69,7 @@ namespace Infrastructure.Services
             return users;
         }
 
-        public async Task<User> GetUser(Guid userId)
+        public async Task<User> GetUser(int userId)
         {
             return await _userRepository.FindByIdAsync(userId);
         }
@@ -89,7 +89,7 @@ namespace Infrastructure.Services
             }
         }
 
-        public async Task<User> CreateUser(string name, string email, Guid currentUserId)
+        public async Task<User> CreateUser(string name, string email, int currentUserId)
         {
             var user = new User()
             {
@@ -106,11 +106,11 @@ namespace Infrastructure.Services
             return user;
         }
 
-        public async Task UpdateUser(User user, Guid currentUserId)
+        public async Task UpdateUser(User user, int currentUserId)
         {
             if (!string.IsNullOrWhiteSpace(user.Name) 
                 && !string.IsNullOrWhiteSpace(user.Email)
-                && user.Id != Guid.Empty)
+                && user.Id != 0)
             {
                 var dbuser = await _userRepository.FindByIdAsync(user.Id); 
                 if (user != null)
@@ -122,7 +122,7 @@ namespace Infrastructure.Services
             }
         }
 
-        public async Task DeactivateUser(Guid userId, Guid currentUserId)
+        public async Task DeactivateUser(int userId, int currentUserId)
         {
             var user = await GetUser(userId);
             if (user != null)
@@ -132,7 +132,7 @@ namespace Infrastructure.Services
             }
         }
 
-        public async Task SetHolidayConfig(int year, int maxHolidays, Guid userId, Guid currentUserId)
+        public async Task SetHolidayConfig(int year, int maxHolidays, int userId, int currentUserId)
         {
             var holidayConfig = (await _holidayConfigRepository.FindAllAsync(hc => hc.UserId == userId && hc.Year == year)).FirstOrDefault();
             if (holidayConfig != null)

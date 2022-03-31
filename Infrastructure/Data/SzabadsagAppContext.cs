@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -35,6 +36,12 @@ namespace Infrastructure.Data
             modelBuilder.Entity<User>().ToTable("Users");
             modelBuilder.Entity<HolidayConfig>().ToTable("HolidayConfigs");
             modelBuilder.Entity<YearConfig>().ToTable("YearConfigs");
+
+
+            modelBuilder.Entity<Holiday>().Property(p => p.Id).ValueGeneratedOnAdd();
+            modelBuilder.Entity<HolidayConfig>().Property(p => p.Id).ValueGeneratedOnAdd();
+            modelBuilder.Entity<User>().Property(p => p.Id).ValueGeneratedOnAdd();
+            modelBuilder.Entity<YearConfig>().Property(p => p.Id).ValueGeneratedOnAdd();
         }
     }
 }

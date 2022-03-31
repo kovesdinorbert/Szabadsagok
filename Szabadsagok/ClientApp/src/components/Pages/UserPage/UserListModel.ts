@@ -1,7 +1,7 @@
 import { Guid } from "guid-typescript";
 
 export class UserListModel {
-    id?: Guid;
+    id?: string;
     name: Date | null = null;
     email: Date | null = null;
 }

@@ -40,7 +40,7 @@ namespace Szabadsagok.Controllers
         {
             var idStr = ClaimHelper.GetClaimData(User, ClaimTypes.NameIdentifier);
 
-            if (string.IsNullOrWhiteSpace(idStr) || !Guid.TryParse(idStr, out var userId))
+            if (string.IsNullOrWhiteSpace(idStr) || !int.TryParse(idStr, out var userId))
             {
                 return Unauthorized();
             }
@@ -59,7 +59,7 @@ namespace Szabadsagok.Controllers
         }
 
         [HttpGet("holidayforuser/{id}")]
-        public async Task<IActionResult> GetHolidaysForUser(Guid userId)
+        public async Task<IActionResult> GetHolidaysForUser(int userId)
         {
             return View();
         }
@@ -72,7 +72,7 @@ namespace Szabadsagok.Controllers
         {
             var idStr = ClaimHelper.GetClaimData(User, ClaimTypes.NameIdentifier);
 
-            if (string.IsNullOrWhiteSpace(idStr) || !Guid.TryParse(idStr, out var userId))
+            if (string.IsNullOrWhiteSpace(idStr) || !int.TryParse(idStr, out var userId))
             {
                 return Unauthorized();
             }
@@ -90,13 +90,13 @@ namespace Szabadsagok.Controllers
         }
 
         [HttpDelete]
-        public async Task<IActionResult> DeleteHoliday(Guid userId, DateTime start, DateTime end)
+        public async Task<IActionResult> DeleteHoliday(int userId, DateTime start, DateTime end)
         {
             return View();
         }
 
         [HttpPost]
-        public async Task<IActionResult> UpdateHolidayStatus(Guid holidayId, StatusEnum status)
+        public async Task<IActionResult> UpdateHolidayStatus(int holidayId, StatusEnum status)
         {
             return View();
         }

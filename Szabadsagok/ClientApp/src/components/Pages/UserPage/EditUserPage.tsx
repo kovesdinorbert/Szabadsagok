@@ -20,7 +20,7 @@ class EditUserPage extends React.Component<any> {
     user: { name: "", email: "", id: Guid.EMPTY }
   };
   token: string = "";
-  user :UserDataModel = { name: "", email: "", id: Guid.parse(Guid.EMPTY) };
+  user :UserDataModel = { name: "", email: "", id: "" };
   isValidDict: {[key: string]: boolean} = {name: true, email: true};
 
   toast: RefObject<Toast>;
@@ -41,7 +41,7 @@ class EditUserPage extends React.Component<any> {
     if (props.selectedUser && props.selectedUser[0]) {
       this.user = {...props.selectedUser[0]};
     } else {
-      this.user = { id: Guid.parse(Guid.EMPTY), email: '', name: '' };
+      this.user = { email: '', name: '' };
     }
   }
   
@@ -134,7 +134,7 @@ this.props.setLoadingState(true);
     let userDataReq: UserDataModel = this.user;
     let requestOptions = {};
 
-    if (userDataReq.id && userDataReq.id.toString() !== Guid.EMPTY) {
+    if (userDataReq.id) {
       url = `${process.env.REACT_APP_API_PATH}/user/updateuser`;
       requestOptions = {
         method: 'POST',
@@ -175,7 +175,7 @@ this.props.setLoadingState(true);
             this.showToast('error', 'Sikertelen művelet', 'Sikertelen művelet');
           } else {
             var data: UserDataModel = await response.json();
-            this.setState({ user: data });
+            this.user = data;
             this.showToast('success', 'Sikeres művelet', 'Sikeres művelet');
           }
           this.setState({ body: "", blocking: false, subject: "", showMessage: true });

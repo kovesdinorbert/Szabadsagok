@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using Szabadsagok.App_Conf;
 using Szabadsagok.Dto;
 using Szabadsagok.Helpers;
 
@@ -18,20 +19,17 @@ namespace Szabadsagok.Controllers
     [ApiController]
     public class UserController : Controller
     {
-        //private readonly ILogger<UserController> _logger;
         private readonly IUserService _userService;
-        //private readonly IEventService _eventService;
+        private readonly IDataProtectionMapProvider _dataProtectionMapProvider;
         private readonly IMapper _mapper;
 
-        public UserController(//ILogger<UserController> logger,
-                              IUserService userService,
-                              //IEventService eventService,
+        public UserController(IUserService userService,
+                              IDataProtectionMapProvider dataProtectionMapProvider,
                               IMapper mapper)
         {
-            //_logger = logger;
             _userService = userService;
+            _dataProtectionMapProvider = dataProtectionMapProvider;
             _mapper = mapper;
-            //_eventService = eventService;
         }
 
         [AllowAnonymous]
@@ -41,11 +39,11 @@ namespace Szabadsagok.Controllers
         public async Task<IActionResult> Authenticate(/*[FromBody] LoginDto login*/)
         {
             //var user = await _userService.Login(login.Email, login.Password);
-            var user = await _userService.GetUser(Guid.Parse("5eb91753-55b5-413a-8975-b34f610dcc6a"));
+            var user = await _userService.GetUser(int.Parse("1"));
             if (user != null)
             {
                 var token = await _userService.GenerateToken(user);
-                return Ok(new LoginResultDto() { Email = user.Email, Id = user.Id, Token = token });
+                return Ok(new LoginResultDto() { Email = user.Email, Id = user.Id.ToString(), Token = token });
             }
 
             return Unauthorized();
@@ -65,7 +63,7 @@ namespace Szabadsagok.Controllers
         {
             var idStr = ClaimHelper.GetClaimData(User, ClaimTypes.NameIdentifier);
 
-            if (string.IsNullOrWhiteSpace(idStr) || !Guid.TryParse(idStr, out var userId))
+            if (string.IsNullOrWhiteSpace(idStr) || !int.TryParse(idStr, out var userId))
             {
                 return Unauthorized();
             }
@@ -84,7 +82,7 @@ namespace Szabadsagok.Controllers
         }
 
         [HttpPost("setholiday/{userId}")]
-        public async Task<IActionResult> SetHoliday(Guid userId)
+        public async Task<IActionResult> SetHoliday(int userId)
         {
             return View();
         }
@@ -97,7 +95,7 @@ namespace Szabadsagok.Controllers
         {
             var idStr = ClaimHelper.GetClaimData(User, ClaimTypes.NameIdentifier);
 
-            if (string.IsNullOrWhiteSpace(idStr) || !Guid.TryParse(idStr, out var userId))
+            if (string.IsNullOrWhiteSpace(idStr) || !int.TryParse(idStr, out var userId))
             {
                 return Unauthorized();
             }
@@ -125,7 +123,7 @@ namespace Szabadsagok.Controllers
         {
             var idStr = ClaimHelper.GetClaimData(User, ClaimTypes.NameIdentifier);
 
-            if (string.IsNullOrWhiteSpace(idStr) || !Guid.TryParse(idStr, out var userId))
+            if (string.IsNullOrWhiteSpace(idStr) || !int.TryParse(idStr, out var userId))
             {
                 return Unauthorized();
             }
@@ -135,7 +133,7 @@ namespace Szabadsagok.Controllers
             try
             {
                 ret =_mapper.Map<UserDataDto>(await _userService.CreateUser(userData.Name, userData.Email, userId));
-                if (ret == null || ret.Id == Guid.Empty)
+                if (ret == null || string.IsNullOrEmpty(ret.Id))
                 {
                     return StatusCode(StatusCodes.Status500InternalServerError);
                 }
@@ -152,18 +150,18 @@ namespace Szabadsagok.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> DeleteUser(Guid id)
+        public async Task<IActionResult> DeleteUser(string id)
         {
             var idStr = ClaimHelper.GetClaimData(User, ClaimTypes.NameIdentifier);
 
-            if (string.IsNullOrWhiteSpace(idStr) || !Guid.TryParse(idStr, out var userId))
+            if (string.IsNullOrWhiteSpace(idStr) || !int.TryParse(idStr, out var userId))
             {
                 return Unauthorized();
             }
 
             try
             {
-                await _userService.DeactivateUser(id, userId);
+                await _userService.DeactivateUser(int.Parse(_dataProtectionMapProvider.Unprotect(id)), userId);
             }
             catch (Exception e)
             {

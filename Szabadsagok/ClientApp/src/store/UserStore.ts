@@ -40,7 +40,6 @@ export const reducer: Reducer<UserState> = (state: UserState | undefined, incomi
             localStorage.setItem(tokenStr, "");
             return {loading: state.loading, token: "" };
         case 'SETLOADINGSTATE':
-            debugger;
             return { loading: action.loading, token: state.token};
         default:
             return state;

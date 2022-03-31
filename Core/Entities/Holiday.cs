@@ -12,7 +12,7 @@ namespace Core.Entities
         public DateTime Start { get; set; }
         public DateTime End { get; set; }
         public StatusEnum Status { get; set; }
-        public Guid UserId { get; set; }
+        public int UserId { get; set; }
         public User User { get; set; }
     }
 }

@@ -21,7 +21,7 @@ namespace Infrastructure.Services
             return await _yearConfigRepository.FindAllAsync(yc => yc.Date.Year == year);
         }
 
-        public async Task SetYearData(List<YearConfig> yearConfigs, Guid currentUserId)
+        public async Task SetYearData(List<YearConfig> yearConfigs, int currentUserId)
         {
             int year = yearConfigs.First().Date.Year;
             var oldYearConfigs = await _yearConfigRepository.FindAllAsync(yc => yc.Date.Year == year);

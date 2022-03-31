@@ -21,26 +21,26 @@ namespace Infrastructure.Services
             _holidayConfigRepository = holidayConfigRepository;
         }
 
-        public async Task CreateHoliday(Holiday holiday, Guid currentUserId)
+        public async Task CreateHoliday(Holiday holiday, int currentUserId)
         {
             holiday.UserId = currentUserId;
             holiday.HolidayCount = 0;//calculation
             await _holidayRepository.CreateAsync(holiday, currentUserId);
         }
 
-        public async Task DeleteHoliday(Guid holidayId)
+        public async Task DeleteHoliday(int holidayId)
         {
             await _holidayRepository.DeleteAsync(holidayId);
         }
 
-        public async Task<int> GetAvailableHolidayNumber(Guid userId)
+        public async Task<int> GetAvailableHolidayNumber(int userId)
         {
             var maxHolidays = (await _holidayConfigRepository.FindAllAsync(hc => hc.UserId == userId)).Sum(hc => hc.MaxHoliday);
             var usedHolidays = (await _holidayRepository.FindAllAsync(h => h.UserId == userId && h.Status == StatusEnum.Accepted)).Sum(h => h.HolidayCount);
             return maxHolidays - usedHolidays;
         }
 
-        public async Task<List<Holiday>> GetHolidaysForUser(Guid userId)
+        public async Task<List<Holiday>> GetHolidaysForUser(int userId)
         {
             return await _holidayRepository.FindAllAsync(h => h.UserId == userId);
         }
@@ -56,7 +56,7 @@ namespace Infrastructure.Services
             return holidays.OrderBy(h => h.Start).ToList();
         }
 
-        public async Task UpdateStatusHoliday(Guid holidayId, StatusEnum status, Guid currentUserId)
+        public async Task UpdateStatusHoliday(int holidayId, StatusEnum status, int currentUserId)
         {
             var holiday = await _holidayRepository.FindByIdAsync(holidayId);
             if (holiday != null)

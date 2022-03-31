@@ -4,6 +4,6 @@ namespace Core.Interfaces
 {
     public interface IHasId
     {
-        Guid Id { get; set; }
+        int Id { get; set; }
     }
 }

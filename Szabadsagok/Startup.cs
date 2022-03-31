@@ -1,3 +1,4 @@
+using AutoMapper;
 using Core.Configuration;
 using Core.Interfaces;
 using Infrastructure.Data;
@@ -5,6 +6,8 @@ using Infrastructure.Repository;
 using Infrastructure.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Mvc;
@@ -14,7 +17,9 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
+using System.Security.Cryptography;
 using System.Text;
+using Szabadsagok.App_Conf;
 
 namespace Szabadsagok
 {
@@ -45,14 +50,31 @@ namespace Szabadsagok
 
             services.AddDbContext<SzabadsagAppContext>(x => x.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"))); ;
 
-
-            services.AddAutoMapper(typeof(Startup));
+            services.AddDataProtection()
+                    .UseCustomCryptographicAlgorithms(new CngCbcAuthenticatedEncryptorConfiguration
+                    {
+                        EncryptionAlgorithm = "AES",
+                        EncryptionAlgorithmProvider = null,
+                        EncryptionAlgorithmKeySize = 128
+                    });
 
             services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
             services.AddScoped(typeof(IUserService), typeof(UserService));
             services.AddScoped(typeof(IHolidayService), typeof(HolidayService));
             services.AddScoped(typeof(IYearConfigService), typeof(YearConfigService));
             services.AddScoped(typeof(IEmailService), typeof(EmailService));
+            services.AddSingleton(typeof(IDataProtectionMapProvider), typeof(DataProtectionMapProvider));
+            services.AddSingleton(provider => new MapperConfiguration(cfg =>
+            {
+                cfg.AddProfile(new MappingConfig(provider.GetService<IDataProtectionMapProvider>()));
+            }).CreateMapper());
+            //services.AddAutoMapperBuilder
+            //services.AddAutoMapperBuilder(builder =>
+            //{
+            //    builder.Profiles.Add(new UserProfile(services.BuildServiceProvider().GetRequiredService<IUserManager>()));
+            //});
+
+            //services.AddAutoMapper(typeof(Startup));
 
             services.AddCors();
 

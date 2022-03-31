@@ -21,7 +21,7 @@ namespace Infrastructure.Repository
             _table = _context.Set<T>();
         }
 
-        public async Task CreateAsync(T entity, Guid userId)
+        public async Task CreateAsync(T entity, int userId)
         {
             if (typeof(T).IsSubclassOf(typeof(_CrudBase)))
             {
@@ -29,10 +29,10 @@ namespace Infrastructure.Repository
                 ((IHasCrud)entity).CreatedBy = userId;
                 ((IHasCrud)entity).IsActive = true;
             }
-            if (typeof(IHasId).IsAssignableFrom(typeof(T)))
-            {
-                ((IHasId)entity).Id = new Guid();
-            }
+            //if (typeof(IHasId).IsAssignableFrom(typeof(T)))
+            //{
+            //    ((IHasId)entity).Id = new int();
+            //}
             _table.Add(entity);
             await _context.SaveChangesAsync();
         }
@@ -43,7 +43,7 @@ namespace Infrastructure.Repository
             await _context.SaveChangesAsync();
         }
 
-        public async Task DeleteAsync(Guid id)
+        public async Task DeleteAsync(int id)
         {
             var ret = await _table.FindAsync(id);
             if (ret == null)
@@ -92,7 +92,7 @@ namespace Infrastructure.Repository
             return await Task.FromResult(ret.ToList());
         }
 
-        public async Task<T> FindByIdAsync(Guid id)
+        public async Task<T> FindByIdAsync(int id)
         {
             var ret = await _table.FindAsync(id);
             if (ret == null)
@@ -102,7 +102,7 @@ namespace Infrastructure.Repository
             return await Task.FromResult(ret);
         }
 
-        public async Task UpdateAsync(T entity, Guid userId)
+        public async Task UpdateAsync(T entity, int userId)
         {
             if (typeof(T).IsSubclassOf(typeof(_CrudBase)))
             {

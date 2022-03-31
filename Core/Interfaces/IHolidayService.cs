@@ -9,10 +9,10 @@ namespace Core.Interfaces
     public interface IHolidayService
     {
         Task<List<Holiday>> GetFutureHolidays();
-        Task<List<Holiday>> GetHolidaysForUser(Guid userId);
-        Task<int> GetAvailableHolidayNumber(Guid userId);
-        Task CreateHoliday(Holiday holiday, Guid currentUserId);
-        Task DeleteHoliday(Guid holidayId);
-        Task UpdateStatusHoliday(Guid holidayId, StatusEnum status, Guid currentUserId);
+        Task<List<Holiday>> GetHolidaysForUser(int userId);
+        Task<int> GetAvailableHolidayNumber(int userId);
+        Task CreateHoliday(Holiday holiday, int currentUserId);
+        Task DeleteHoliday(int holidayId);
+        Task UpdateStatusHoliday(int holidayId, StatusEnum status, int currentUserId);
     }
 }

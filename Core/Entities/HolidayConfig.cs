@@ -6,7 +6,7 @@ namespace Core.Entities
     {
         public int Year { get; set; }
         public int MaxHoliday { get; set; }
-        public Guid UserId { get; set; }
+        public int UserId { get; set; }
         public User User { get; set; }
     }
 }

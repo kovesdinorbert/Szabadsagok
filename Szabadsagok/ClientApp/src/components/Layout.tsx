@@ -8,7 +8,6 @@ import { PageLoading } from './Common/PageLoading/PageLoading';
 
 class Layout extends React.PureComponent<any, { children?: React.ReactNode }> {
     public render() {
-        debugger;
         return (
             <React.Fragment>
                 <PageLoading show={this.props.loading}></PageLoading>
