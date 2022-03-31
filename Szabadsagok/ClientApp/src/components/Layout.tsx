@@ -5,12 +5,14 @@ import NavMenu from './NavMenu';
 import * as AppContextStore from '../store/AppContextStore';
 import { connect } from 'react-redux';
 import { PageLoading } from './Common/PageLoading/PageLoading';
+import Toastr from './Common/Toastr/Toastr';
 
 class Layout extends React.PureComponent<any, { children?: React.ReactNode }> {
     public render() {
         return (
             <React.Fragment>
                 <PageLoading show={this.props.loading}></PageLoading>
+                <Toastr toastr={this.props.message} />
                 <NavMenu />
                 <Container>
                     {this.props.children}

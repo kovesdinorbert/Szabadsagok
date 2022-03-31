@@ -1,10 +1,9 @@
-import React, { RefObject } from 'react';
+import React from 'react';
 import { connect } from 'react-redux';
 import FullCalendar, { DateSelectArg } from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import moment from 'moment';
-import { Toast } from 'primereact/toast';
 import { Button } from 'primereact/button';
 import { faEnvelopeSquare } from '@fortawesome/free-solid-svg-icons';
 import { HolidayRequestModel } from './HolidayRequestModel';
@@ -13,7 +12,6 @@ import { InputTextAreaModel } from '../../Common/InputTextArea/InputTextAreaMode
 import * as UserStore from '../../../store/AppContextStore';
 
 import './design.css';
-import { RouteComponentProps } from 'react-router';
 
     
 class HolidayPage extends React.PureComponent<any> {
@@ -22,20 +20,14 @@ class HolidayPage extends React.PureComponent<any> {
     start: Date,
     end: Date,
     formIsValid: false,
-    blocking: false,
   };
 
   token: string = "";
   reason: string = "";
   isValidDict: {[key: string]: boolean} = {start: false, end: false, reason: false};
 
-  toast: RefObject<Toast>;
-
   constructor(props: any) {
     super(props);
-    this.mentesHandleClick = this.mentesHandleClick.bind(this);
-    this.megseHandleClick = this.megseHandleClick.bind(this);
-    this.showToast = this.showToast.bind(this);
     this.handleEmailChange = this.handleEmailChange.bind(this);
     this.reasonEnterPressed = this.reasonEnterPressed.bind(this);
     this.dateSelected = this.dateSelected.bind(this);
@@ -43,8 +35,6 @@ class HolidayPage extends React.PureComponent<any> {
     this.setReason = this.setReason.bind(this);
     this.sendRequest = this.sendRequest.bind(this);
     this.auth = this.auth.bind(this);
-
-    this.toast = React.createRef();
   }
 
   componentDidMount() {
@@ -74,21 +64,8 @@ class HolidayPage extends React.PureComponent<any> {
     this.setState({ formIsValid: Object.keys(this.isValidDict).filter(key => !this.isValidDict[key]).length === 0 });
   }
 
-  private mentesHandleClick() {
-    this.showToast('success', 'Success Message', 'Order submitted');
-  }
-
-  private megseHandleClick() {
-    this.showToast('info', 'Nem Success Message', 'Nem Order submitted');
-  }
-
   private reasonEnterPressed() {
     this.sendRequest();
-  }
-
-  private showToast(severity: string, summary: string, detail: string) {
-    if (this.toast.current !== null)
-      this.toast.current.show({ severity: severity, summary: summary, detail: detail, life: 3000 });
   }
 
   private handleEmailChange(email: string) {
@@ -97,7 +74,6 @@ class HolidayPage extends React.PureComponent<any> {
 
   private auth() {
     let url = `${process.env.REACT_APP_API_PATH}/user/authenticate`;
-    this.setState({ blocking: true });
 
     const requestOptions = {
       method: 'POST',
@@ -109,17 +85,17 @@ class HolidayPage extends React.PureComponent<any> {
     fetch(url, requestOptions)
       .then(async response => {
         if (!response.ok) {
-          this.showToast('error', 'Sikertelen művelet', 'Sikertelen művelet');
+          this.props.showToastrMessage({severity: 'error', summary:'Sikertelen művelet', detail: 'Sikertelen művelet'});
         } else {
           response.json().then((resp: any) => {
             this.token = resp.token;
-            this.showToast('success', 'Sikeres művelet', 'Sikeres művelet');
+            this.props.showToastrMessage({severity: 'success', summary:'Sikeres művelet', detail: 'Sikeres művelet'});
           });
         }
-        this.setState({ body: "", blocking: false, subject: "", name: "", email: "", showMessage: true });
+        this.setState({ body: "", subject: "", name: "", email: "", showMessage: true });
       })
       .catch(error => {
-        this.showToast('error', 'Sikertelen művelet', 'Sikertelen művelet');
+        this.props.showToastrMessage({severity: 'error', summary:'Sikertelen művelet', detail: 'Sikertelen művelet'});
       });
   }
 
@@ -130,7 +106,6 @@ class HolidayPage extends React.PureComponent<any> {
     this.props.setLoadingState(true);
     
     let url = `${process.env.REACT_APP_API_PATH}/holiday`;
-    this.setState({ blocking: true });
 
     let holidayReq: HolidayRequestModel = {
       start: this.state.start,
@@ -149,15 +124,15 @@ class HolidayPage extends React.PureComponent<any> {
     fetch(url, requestOptions)
       .then(async response => {
         if (!response.ok) {
-          this.showToast('error', 'Sikertelen művelet', 'Sikertelen művelet');
+          this.props.showToastrMessage({severity: 'error', summary:'Sikertelen művelet', detail: 'Sikertelen művelet'});
         } else {
-          this.showToast('success', 'Sikeres művelet', 'Sikeres művelet');
+          this.props.showToastrMessage({severity: 'success', summary:'Sikeres művelet', detail: 'Sikeres művelet'});
         }
-        this.setState({ body: "", blocking: false, subject: "", name: "", email: "", showMessage: true });
+        this.setState({ body: "", subject: "", name: "", email: "", showMessage: true });
         this.props.setLoadingState(false);
       })
       .catch(error => {
-        this.showToast('error', 'Sikertelen művelet', 'Sikertelen művelet');
+        this.props.showToastrMessage({severity: 'error', summary:'Sikertelen művelet', detail: 'Sikertelen művelet'});
         this.props.setLoadingState(false);
       });
   }
@@ -199,7 +174,6 @@ class HolidayPage extends React.PureComponent<any> {
             onInputValueChange={this.setReason} enterPressed={this.reasonEnterPressed} />
         </div>
         <Button disabled={!this.state.formIsValid} className="btn-action" onClick={this.sendRequest}>Mentés</Button>
-        <Toast ref={this.toast} />
       </React.Fragment>
     );
   }

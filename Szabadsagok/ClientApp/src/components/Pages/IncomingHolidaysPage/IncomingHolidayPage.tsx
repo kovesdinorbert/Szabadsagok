@@ -1,7 +1,6 @@
 import React, { RefObject } from 'react';
 import { connect } from 'react-redux';
 import moment from 'moment';
-import { Toast } from 'primereact/toast';
 import { faEnvelopeSquare } from '@fortawesome/free-solid-svg-icons';
 import { IncomingHolidayModel } from './IncomingHolidayModel';
 import { InputTextAreaModel } from '../../Common/InputTextArea/InputTextAreaModel';
@@ -11,7 +10,6 @@ import { HolidayDistanceEnum } from './HolidayDistanceEnum';
 import * as UserStore from '../../../store/AppContextStore';
 import { RouteComponentProps } from 'react-router';
 export interface IState {
-  blocking: boolean;
   holidays?: IncomingHolidayModel[];
 }
 
@@ -22,19 +20,14 @@ export interface IState {
 class IncomingHolidayPage extends React.Component<any>/*<CounterProps>*/ {
 
   public state: IState = {
-    holidays: undefined,
-    blocking: false,
+    holidays: undefined
   };
   token: string = "";
-
-  toast: RefObject<Toast>;
 
   constructor(props: any) {
     super(props);
     this.sendRequest = this.sendRequest.bind(this);
     this.auth = this.auth.bind(this);
-
-    this.toast = React.createRef();
   }
 
   componentDidMount() {
@@ -46,14 +39,8 @@ class IncomingHolidayPage extends React.Component<any>/*<CounterProps>*/ {
     }
   }
 
-  private showToast(severity: string, summary: string, detail: string) {
-    if (this.toast.current !== null)
-      this.toast.current.show({ severity: severity, summary: summary, detail: detail, life: 3000 });
-  }
-
   private auth() {
     let url = `${process.env.REACT_APP_API_PATH}/user/authenticate`;
-    this.setState({ blocking: true });
 
     const requestOptions = {
       method: 'POST',
@@ -65,25 +52,24 @@ class IncomingHolidayPage extends React.Component<any>/*<CounterProps>*/ {
     fetch(url, requestOptions)
       .then(async response => {
         if (!response.ok) {
-          this.showToast('error', 'Sikertelen művelet', 'Sikertelen művelet');
+          this.props.showToastrMessage({severity: 'error', summary:'Sikertelen művelet', detail: 'Sikertelen művelet'});
         } else {
           response.json().then((resp: any) => {
             this.token = resp.token;
             this.props.saveToken(this.token);
             this.sendRequest();
-            this.showToast('success', 'Sikeres művelet', 'Sikeres művelet');
+            this.props.showToastrMessage({severity: 'success', summary:'Sikeres művelet', detail: 'Sikeres művelet'});
           });
         }
-        this.setState({ body: "", blocking: false, subject: "", name: "", email: "", showMessage: true });
+        this.setState({ body: "", subject: "", name: "", email: "", showMessage: true });
       })
       .catch(error => {
-        this.showToast('error', 'Sikertelen művelet', 'Sikertelen művelet');
+        this.props.showToastrMessage({severity: 'error', summary:'Sikertelen művelet', detail: 'Sikertelen művelet'});
       });
   }
 
   private sendRequest() {
     let url = `${process.env.REACT_APP_API_PATH}/holiday`;
-    this.setState({ blocking: true });
     this.props.setLoadingState(true);
 
     const requestOptions = {
@@ -97,7 +83,7 @@ class IncomingHolidayPage extends React.Component<any>/*<CounterProps>*/ {
     fetch(url, requestOptions)
       .then(async response => {
         if (!response.ok) {
-          this.showToast('error', 'Sikertelen művelet', 'Sikertelen művelet');
+          this.props.showToastrMessage({severity: 'error', summary:'Sikertelen művelet', detail: 'Sikertelen művelet'});
         } else {
           const data: IncomingHolidayModel[] = await response.json();
           this.setState({
@@ -111,13 +97,13 @@ class IncomingHolidayPage extends React.Component<any>/*<CounterProps>*/ {
               });
             })
           });
-          this.showToast('success', 'Sikeres művelet', 'Sikeres művelet');
+          this.props.showToastrMessage({severity: 'success', summary:'Sikeres művelet', detail: 'Sikeres művelet'});
         }
-        this.setState({ body: "", blocking: false, subject: "", name: "", email: "", showMessage: true });
+        this.setState({ body: "", subject: "", name: "", email: "", showMessage: true });
         this.props.setLoadingState(false);
       })
       .catch(error => {
-        this.showToast('error', 'Sikertelen művelet', 'Sikertelen művelet');
+        this.props.showToastrMessage({severity: 'error', summary:'Sikertelen művelet', detail: 'Sikertelen művelet'});
         this.props.setLoadingState(false);
       });
   }
@@ -144,7 +130,6 @@ class IncomingHolidayPage extends React.Component<any>/*<CounterProps>*/ {
             <Column field="distance" header="Távolság"></Column>
           </DataTable>
           : <></>}
-        <Toast ref={this.toast} />
       </React.Fragment>
     );
   }

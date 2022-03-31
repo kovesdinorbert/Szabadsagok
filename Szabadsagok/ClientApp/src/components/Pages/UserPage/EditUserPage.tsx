@@ -1,6 +1,5 @@
 import React, { RefObject } from 'react';
 import { connect } from 'react-redux';
-import { Toast } from 'primereact/toast';
 import { Button } from 'primereact/button';
 import InputField from '../../Common/InputField/InputField';
 import { InputFieldModel } from '../../Common/InputField/InputFieldModel';
@@ -15,7 +14,6 @@ class EditUserPage extends React.Component<any> {
 
   public state: any = {
     formIsValid: false,
-    blocking: false,
     holidays: 0,
     user: { name: "", email: "", id: Guid.EMPTY }
   };
@@ -23,13 +21,8 @@ class EditUserPage extends React.Component<any> {
   user :UserDataModel = { name: "", email: "", id: "" };
   isValidDict: {[key: string]: boolean} = {name: false, email: false};
 
-  toast: RefObject<Toast>;
-
   constructor(props: any) {
     super(props);
-    this.mentesHandleClick = this.mentesHandleClick.bind(this);
-    this.megseHandleClick = this.megseHandleClick.bind(this);
-    this.showToast = this.showToast.bind(this);
     this.reasonEnterPressed = this.reasonEnterPressed.bind(this);
     this.setFormIsValid = this.setFormIsValid.bind(this);
     this.setEmail = this.setEmail.bind(this);
@@ -37,7 +30,7 @@ class EditUserPage extends React.Component<any> {
     this.setHolidays = this.setHolidays.bind(this);
     this.sendRequest = this.sendRequest.bind(this);
     this.auth = this.auth.bind(this);
-    this.toast = React.createRef();
+    
     if (props.selectedUser && props.selectedUser[0]) {
       this.user = {...props.selectedUser[0]};
       this.isValidDict = {name: true, email: true};
@@ -77,26 +70,12 @@ class EditUserPage extends React.Component<any> {
     this.setState({ formIsValid: Object.keys(this.isValidDict).filter(key => !this.isValidDict[key]).length === 0 });
   }
 
-  private mentesHandleClick() {
-    this.showToast('success', 'Success Message', 'Order submitted');
-  }
-
-  private megseHandleClick() {
-    this.showToast('info', 'Nem Success Message', 'Nem Order submitted');
-  }
-
   private reasonEnterPressed() {
     this.sendRequest();
   }
 
-  private showToast(severity: string, summary: string, detail: string) {
-    if (this.toast.current !== null)
-      this.toast.current.show({ severity: severity, summary: summary, detail: detail, life: 3000 });
-  }
-
   private auth() {
     let url = `${process.env.REACT_APP_API_PATH}/user/authenticate`;
-    this.setState({ blocking: true });
 
     const requestOptions = {
       method: 'POST',
@@ -108,17 +87,17 @@ class EditUserPage extends React.Component<any> {
     fetch(url, requestOptions)
       .then(async response => {
         if (!response.ok) {
-          this.showToast('error', 'Sikertelen művelet', 'Sikertelen művelet');
+          this.props.showToastrMessage({severity: 'error', summary:'Sikertelen művelet', detail: 'Sikertelen művelet'});
         } else {
           response.json().then((resp: any) => {
             this.token = resp.token;
-            this.showToast('success', 'Sikeres művelet', 'Sikeres művelet');
+            this.props.showToastrMessage({severity: 'succcess', summary:'Sikeres művelet', detail: 'Sikeres művelet'});
           });
         }
-        this.setState({ body: "", blocking: false, subject: "", showMessage: true });
+        this.setState({ body: "", subject: "", showMessage: true });
       })
       .catch(error => {
-        this.showToast('error', 'Sikertelen művelet', 'Sikertelen művelet');
+        this.props.showToastrMessage({severity: 'error', summary:'Sikertelen művelet', detail: 'Sikertelen művelet'});
       });
   }
 
@@ -130,7 +109,6 @@ class EditUserPage extends React.Component<any> {
 this.props.setLoadingState(true);
 
     let url = ``;
-    this.setState({ blocking: true });
 
     let userDataReq: UserDataModel = this.user;
     let requestOptions = {};
@@ -148,16 +126,16 @@ this.props.setLoadingState(true);
       fetch(url, requestOptions)
         .then(async response => {
           if (!response.ok) {
-            this.showToast('error', 'Sikertelen művelet', 'Sikertelen művelet');
+            this.props.showToastrMessage({severity: 'error', summary:'Sikertelen művelet', detail: 'Sikertelen művelet'});
           } else {
-            this.showToast('success', 'Sikeres művelet', 'Sikeres művelet');
+            this.props.showToastrMessage({severity: 'success', summary:'Sikeres művelet', detail: 'Sikeres művelet'});
           }
-          this.setState({ body: "", blocking: false, subject: "", showMessage: true });
+          this.setState({ body: "", subject: "", showMessage: true });
           this.props.setLoadingState(false);
           this.props.updateListCb(this.user);
         })
         .catch(error => {
-          this.showToast('error', 'Sikertelen művelet', 'Sikertelen művelet');
+          this.props.showToastrMessage({severity: 'error', summary:'Sikertelen művelet', detail: 'Sikertelen művelet'});
           this.props.setLoadingState(false);
         });
     } else {
@@ -173,18 +151,18 @@ this.props.setLoadingState(true);
       fetch(url, requestOptions)
         .then(async response => {
           if (!response.ok) {
-            this.showToast('error', 'Sikertelen művelet', 'Sikertelen művelet');
+            this.props.showToastrMessage({severity: 'error', summary:'Sikertelen művelet', detail: 'Sikertelen művelet'});
           } else {
             var data: UserDataModel = await response.json();
             this.user = data;
-            this.showToast('success', 'Sikeres művelet', 'Sikeres művelet');
+            this.props.showToastrMessage({severity: 'success', summary:'Sikeres művelet', detail: 'Sikeres művelet'});
           }
-          this.setState({ body: "", blocking: false, subject: "", showMessage: true });
+          this.setState({ body: "", subject: "", showMessage: true });
           this.props.updateListCb(this.user);
           this.props.setLoadingState(false);
         })
         .catch(error => {
-          this.showToast('error', 'Sikertelen művelet', 'Sikertelen művelet');
+          this.props.showToastrMessage({severity: 'error', summary:'Sikertelen művelet', detail: 'Sikertelen művelet'});
           this.props.setLoadingState(false);
         });
     }
@@ -231,7 +209,6 @@ this.props.setLoadingState(true);
         </div>
         <Button disabled={!this.state.formIsValid} className="btn-action" onClick={this.sendRequest}>Mentés</Button>
         <Button className="btn-action" onClick={this.props.onModalClose}>Mégse</Button>
-        <Toast ref={this.toast} />
       </React.Fragment>
     );
   }

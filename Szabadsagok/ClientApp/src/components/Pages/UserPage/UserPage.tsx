@@ -12,12 +12,12 @@ import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { Guid } from 'guid-typescript';
 import { ConfirmDialog } from 'primereact/confirmdialog';
+import { ToastMessage } from 'primereact/toast';
 import * as UserStore from '../../../store/AppContextStore';
 class UserPage extends React.PureComponent<any> {
 
   public state: any = {
     formIsValid: false,
-    blocking: false,
     holidays: 0,
     users: [],
     name: "",
@@ -29,13 +29,8 @@ class UserPage extends React.PureComponent<any> {
   token: string = "";
   toDeleteUserId: string = "";
 
-  toast: RefObject<Toast>;
-
   constructor(props: any) {
     super(props);
-    this.mentesHandleClick = this.mentesHandleClick.bind(this);
-    this.megseHandleClick = this.megseHandleClick.bind(this);
-    this.showToast = this.showToast.bind(this);
     this.handleEmailChange = this.handleEmailChange.bind(this);
     this.reasonEnterPressed = this.reasonEnterPressed.bind(this);
     this.dateSelected = this.dateSelected.bind(this);
@@ -53,8 +48,6 @@ class UserPage extends React.PureComponent<any> {
     this.deleteButtonTemplate = this.deleteButtonTemplate.bind(this);
     this.hideDeleteDialog = this.hideDeleteDialog.bind(this);
     this.deleteUser = this.deleteUser.bind(this);
-
-    this.toast = React.createRef();
   }
 
   componentDidMount() {
@@ -91,14 +84,6 @@ class UserPage extends React.PureComponent<any> {
     this.setState({ formIsValid: this.state.name && this.state.email });
   }
 
-  private mentesHandleClick() {
-    this.showToast('success', 'Success Message', 'Order submitted');
-  }
-
-  private megseHandleClick() {
-    this.showToast('info', 'Nem Success Message', 'Nem Order submitted');
-  }
-
   private reasonEnterPressed() {
     this.sendRequest();
   }
@@ -108,18 +93,12 @@ class UserPage extends React.PureComponent<any> {
     this.setState({ showEditModal: !this.state.showEditModal });
   }
 
-  private showToast(severity: string, summary: string, detail: string) {
-    if (this.toast.current !== null)
-      this.toast.current.show({ severity: severity, summary: summary, detail: detail, life: 3000 });
-  }
-
   private handleEmailChange(email: string) {
     this.setState({ email: email });
   }
 
   private auth() {
     let url = `${process.env.REACT_APP_API_PATH}/user/authenticate`;
-    this.setState({ blocking: true });
 
     const requestOptions = {
       method: 'POST',
@@ -131,24 +110,23 @@ class UserPage extends React.PureComponent<any> {
     fetch(url, requestOptions)
       .then(async response => {
         if (!response.ok) {
-          this.showToast('error', 'Sikertelen művelet', 'Sikertelen művelet');
+          this.props.showToastrMessage({severity: 'error', summary:'Sikertelen művelet', detail: 'Sikertelen művelet'});
         } else {
           response.json().then((resp: any) => {
             this.token = resp.token;
-            this.showToast('success', 'Sikeres művelet', 'Sikeres művelet');
+            this.props.showToastrMessage({severity: 'success', summary:'Sikeres művelet', detail: 'Sikeres művelet'});
             this.sendRequest();
           });
         }
-        this.setState({ body: "", blocking: false, subject: "", name: "", email: "", showMessage: true });
+        this.setState({ body: "", subject: "", name: "", email: "", showMessage: true });
       })
       .catch(error => {
-        this.showToast('error', 'Sikertelen művelet', 'Sikertelen művelet');
+        this.props.showToastrMessage({severity: 'error', summary:'Sikertelen művelet', detail: 'Sikertelen művelet'});
       });
   }
 
   private sendRequest() {
     let url = `${process.env.REACT_APP_API_PATH}/user/getallusers`;
-    this.setState({ blocking: true });
     this.props.setLoadingState(true);
 
     const requestOptions = {
@@ -162,17 +140,16 @@ class UserPage extends React.PureComponent<any> {
     fetch(url, requestOptions)
       .then(async response => {
         if (!response.ok) {
-          this.showToast('error', 'Sikertelen művelet', 'Sikertelen művelet');
-          this.setState({ blocking: false });
+          this.props.showToastrMessage({severity: 'error', summary:'Sikertelen művelet', detail: 'Sikertelen művelet'});
         } else {
           const data: UserListModel = await response.json();
-          this.setState({ users: data, blocking: false });
-          this.showToast('success', 'Sikeres művelet', 'Sikeres művelet');
+          this.setState({ users: data });
+          this.props.showToastrMessage({severity: 'success', summary:'Sikeres művelet', detail: 'Sikeres művelet'});
         }
         this.props.setLoadingState(false);
       })
       .catch(error => {
-        this.showToast('error', 'Sikertelen művelet', 'Sikertelen művelet');
+        this.props.showToastrMessage({severity: 'error', summary:'Sikertelen művelet', detail: 'Sikertelen művelet'});
         this.props.setLoadingState(false);
       });
   }
@@ -188,7 +165,7 @@ class UserPage extends React.PureComponent<any> {
     if (this.toDeleteUserId && this.toDeleteUserId !== "") {
 
       let url = `${process.env.REACT_APP_API_PATH}/user/` + this.toDeleteUserId.toString();
-      this.setState({ blocking: true });
+      this.props.setLoadingState(true);
 
       const requestOptions = {
         method: 'DELETE',
@@ -201,15 +178,16 @@ class UserPage extends React.PureComponent<any> {
       fetch(url, requestOptions)
         .then(async response => {
           if (!response.ok) {
-            this.showToast('error', 'Sikertelen művelet', 'Sikertelen művelet');
-            this.setState({ blocking: false });
+            this.props.showToastrMessage({severity: 'error', summary:'Sikertelen művelet', detail: 'Sikertelen művelet'});
           } else {
-            this.setState({ users: this.state.users.filter((u: UserListModel) => u.id !== this.toDeleteUserId), blocking: false });
-            this.showToast('success', 'Sikeres művelet', 'Sikeres művelet');
+            this.props.showToastrMessage({severity: 'success', summary:'Sikeres művelet', detail: 'Sikeres művelet'});
+            this.setState({ users: this.state.users.filter((u: UserListModel) => u.id !== this.toDeleteUserId) });
           }
+          this.props.setLoadingState(false);
         })
         .catch(error => {
-          this.showToast('error', 'Sikertelen művelet', 'Sikertelen művelet');
+          this.props.showToastrMessage({severity: 'error', summary:'Sikertelen művelet', detail: 'Sikertelen művelet'});
+          this.props.setLoadingState(false);
         });
     }
   }
@@ -271,7 +249,6 @@ class UserPage extends React.PureComponent<any> {
         <Button disabled={!this.state.formIsValid} className="btn-action" onClick={this.sendRequest}>Mentés</Button>
         <ConfirmDialog visible={this.state.showDeleteConfirmModal} message="Biztos törli a felhasználót?" onHide={this.hideDeleteDialog}
           header="Megerősítés" icon="pi pi-exclamation-triangle" accept={this.deleteUser} rejectLabel="Mégse" acceptLabel="Ok"/>
-        <Toast ref={this.toast} />
       </React.Fragment>
     );
   }
