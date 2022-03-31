@@ -24,7 +24,9 @@ export class InputNumeric extends React.Component<any, IState>{
     this.validateMaxLength = this.validateMaxLength.bind(this);
   }
   componentDidMount() {
-    this.setState({value: this.props.value});
+    this.setState({value: this.props.value}, () => {
+      this.validate();
+    });
   }
 
   handleChange(event: React.ChangeEvent<HTMLInputElement>) {

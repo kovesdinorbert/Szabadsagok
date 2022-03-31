@@ -10,15 +10,11 @@ import { faEnvelopeSquare } from '@fortawesome/free-solid-svg-icons';
 import { HolidayRequestModel } from './HolidayRequestModel';
 import InputTextArea from '../../Common/InputTextArea/InputTextArea';
 import { InputTextAreaModel } from '../../Common/InputTextArea/InputTextAreaModel';
-import * as UserStore from '../../../store/UserStore';
+import * as UserStore from '../../../store/AppContextStore';
 
 import './design.css';
 import { RouteComponentProps } from 'react-router';
 
-// type UserProps =
-//     UserStore.UserState &
-//     typeof UserStore.actionCreators &
-//     RouteComponentProps<{}>;
     
 class HolidayPage extends React.PureComponent<any> {
 
@@ -179,7 +175,7 @@ class HolidayPage extends React.PureComponent<any> {
     
     return (
       <React.Fragment>
-        <h1>Szabadságok</h1>
+        <h1>Új igény rögzítése</h1>
         <FullCalendar selectable={true}
           locale={'hu'}
           headerToolbar={{
@@ -210,7 +206,7 @@ class HolidayPage extends React.PureComponent<any> {
 };
 
 function mapStateToProps(state :any) {
-  const token = state.user.token;
+  const token = state.appcontext.token;
   return {
     token
   };

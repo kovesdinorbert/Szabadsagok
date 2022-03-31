@@ -22,6 +22,6 @@ class Layout extends React.PureComponent<any, { children?: React.ReactNode }> {
 
 
 export default connect(
-    (state: ApplicationState) => state.appContext,
+    (state: ApplicationState) => state.appcontext,
     AppContextStore.actionCreators
   )(Layout as any);

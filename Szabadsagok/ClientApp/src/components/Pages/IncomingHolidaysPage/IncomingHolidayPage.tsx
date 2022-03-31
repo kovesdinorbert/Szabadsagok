@@ -8,7 +8,7 @@ import { InputTextAreaModel } from '../../Common/InputTextArea/InputTextAreaMode
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { HolidayDistanceEnum } from './HolidayDistanceEnum';
-import * as UserStore from '../../../store/UserStore';
+import * as UserStore from '../../../store/AppContextStore';
 import { RouteComponentProps } from 'react-router';
 export interface IState {
   blocking: boolean;
@@ -135,14 +135,13 @@ class IncomingHolidayPage extends React.Component<any>/*<CounterProps>*/ {
 
     return (
       <React.Fragment>
-        <h1>Szabadságok</h1>
-        <h1>{this.token}</h1>
+        <h1>Közelgő szabadságok</h1>
         {this.state.holidays
           ? <DataTable value={this.state.holidays}>
-            <Column field="start" header="start"></Column>
-            <Column field="end" header="end"></Column>
-            <Column field="userName" header="userName"></Column>
-            <Column field="distance" header="distance"></Column>
+            <Column field="start" header="Kezdete"></Column>
+            <Column field="end" header="Vége"></Column>
+            <Column field="userName" header="Felhasználó"></Column>
+            <Column field="distance" header="Távolság"></Column>
           </DataTable>
           : <></>}
         <Toast ref={this.toast} />
@@ -152,7 +151,7 @@ class IncomingHolidayPage extends React.Component<any>/*<CounterProps>*/ {
 };
 
 function mapStateToProps(state :any) {
-  const token = state.user.token;
+  const token = state.appcontext.token;
   return {
     token
   };

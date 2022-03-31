@@ -52,7 +52,7 @@ namespace Infrastructure.Services
                 source => source.Include(m => m.User),
             };
 
-            var holidays = await _holidayRepository.FindAllAsync(h => h.Start >= DateTime.Today && h.IsActive, includes);
+            var holidays = await _holidayRepository.FindAllAsync(h => h.End >= DateTime.Today && h.IsActive, includes);
             return holidays.OrderBy(h => h.Start).ToList();
         }
 

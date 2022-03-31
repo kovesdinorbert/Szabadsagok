@@ -12,7 +12,7 @@ import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { Guid } from 'guid-typescript';
 import { ConfirmDialog } from 'primereact/confirmdialog';
-import * as UserStore from '../../../store/UserStore';
+import * as UserStore from '../../../store/AppContextStore';
 class UserPage extends React.PureComponent<any> {
 
   public state: any = {
@@ -27,7 +27,7 @@ class UserPage extends React.PureComponent<any> {
   };
   selectedUser = {};
   token: string = "";
-  toDeleteUserId: Guid = Guid.parse(Guid.EMPTY);
+  toDeleteUserId: string = "";
 
   toast: RefObject<Toast>;
 
@@ -177,7 +177,7 @@ class UserPage extends React.PureComponent<any> {
       });
   }
 
-  editUserClick(id: Guid) {
+  editUserClick(id: string) {
     this.selectedUser = Object.assign( {}, this.state.users.filter((u: UserListModel) => u.id === id));
     if (this.selectedUser) {
       this.setState({ showEditModal: true });
@@ -185,7 +185,7 @@ class UserPage extends React.PureComponent<any> {
   }
 
   deleteUser() {
-    if (this.toDeleteUserId && this.toDeleteUserId !== Guid.parse(Guid.EMPTY)) {
+    if (this.toDeleteUserId && this.toDeleteUserId !== "") {
 
       let url = `${process.env.REACT_APP_API_PATH}/user/` + this.toDeleteUserId.toString();
       this.setState({ blocking: true });
@@ -214,21 +214,21 @@ class UserPage extends React.PureComponent<any> {
     }
   }
 
-  showDeleteUserDialog(id?: Guid) {
+  showDeleteUserDialog(id?: string) {
     if (id) {
       this.setState({ showDeleteConfirmModal: true });
       this.toDeleteUserId = id;
     } else {
-      this.toDeleteUserId = Guid.parse(Guid.EMPTY);
+      this.toDeleteUserId = "";
     }
   }
 
   editButtonTemplate(rowData: any) {
-    return <Button value={rowData.id} label="Edit" icon="pi pi-external-link" onClick={() => this.editUserClick(rowData.id)} />
+    return <Button value={rowData.id} label="Szerkesztés" icon="pi pi-external-link" onClick={() => this.editUserClick(rowData.id)} />
   }
 
   deleteButtonTemplate(rowData: any) {
-    return <Button value={rowData.id} label="Delete" icon="pi pi-external-link" onClick={() => this.showDeleteUserDialog(rowData.id)} />
+    return <Button value={rowData.id} label="Törlés" icon="pi pi-external-link" onClick={() => this.showDeleteUserDialog(rowData.id)} />
   }
 
   hideDeleteDialog(e: any) {
@@ -253,24 +253,24 @@ class UserPage extends React.PureComponent<any> {
   public render() {
     return (
       <React.Fragment>
-        <h1>Userek</h1>
+        <h1>Felhasználók</h1>
 
         {this.state.users
           ? <DataTable value={this.state.users}>
             <Column style={{ display: 'none' }} field="id" header="id"></Column>
-            <Column field="name" header="name"></Column>
-            <Column field="email" header="email"></Column>
+            <Column field="name" header="Név"></Column>
+            <Column field="email" header="Email"></Column>
             <Column body={this.editButtonTemplate}></Column>
             <Column body={this.deleteButtonTemplate}></Column>
           </DataTable>
           : <></>}
-        <Dialog header="Header" visible={this.state.showEditModal} style={{ width: '50vw' }} footer={<></>} onHide={this.newUserModalClick}>
+        <Dialog header="Adatok" visible={this.state.showEditModal} style={{ width: '50vw' }} footer={<></>} onHide={this.newUserModalClick}>
           <EditUserPage onModalClose={this.newUserModalClick} selectedUser={this.selectedUser} updateListCb={this.updateList}></EditUserPage>
         </Dialog>
-        <Button label="Show" icon="pi pi-external-link" onClick={this.newUserModalClick} />
+        <Button label="Új felhasználó" icon="pi pi-external-link" onClick={this.newUserModalClick} />
         <Button disabled={!this.state.formIsValid} className="btn-action" onClick={this.sendRequest}>Mentés</Button>
-        <ConfirmDialog visible={this.state.showDeleteConfirmModal} message="Are you sure you want to proceed?" onHide={this.hideDeleteDialog}
-          header="Confirmation" icon="pi pi-exclamation-triangle" accept={this.deleteUser} />
+        <ConfirmDialog visible={this.state.showDeleteConfirmModal} message="Biztos törli a felhasználót?" onHide={this.hideDeleteDialog}
+          header="Megerősítés" icon="pi pi-exclamation-triangle" accept={this.deleteUser} rejectLabel="Mégse" acceptLabel="Ok"/>
         <Toast ref={this.toast} />
       </React.Fragment>
     );
@@ -278,7 +278,7 @@ class UserPage extends React.PureComponent<any> {
 };
 
 function mapStateToProps(state :any) {
-  const token = state.user.token;
+  const token = state.appcontext.token;
   return {
     token
   };

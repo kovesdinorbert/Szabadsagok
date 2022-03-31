@@ -23,7 +23,9 @@ export class InputTextArea extends React.Component<any, IState>{
   }
 
   componentDidMount() {
-    this.setState({value: this.props.value});
+    this.setState({value: this.props.value}, () => {
+      this.validate();
+    });
   }
 
   handleChange(event: React.ChangeEvent<HTMLInputElement>) {

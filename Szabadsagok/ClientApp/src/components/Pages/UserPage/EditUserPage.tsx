@@ -9,7 +9,7 @@ import { InputNumericModel } from '../../Common/InputNumeric/InputNumericModel';
 import InputNumeric from '../../Common/InputNumeric/InputNumeric';
 import { UserDataModel } from './UserDataModel';
 import { Guid } from 'guid-typescript';
-import * as UserStore from '../../../store/UserStore';
+import * as UserStore from '../../../store/AppContextStore';
 
 class EditUserPage extends React.Component<any> {
 
@@ -21,7 +21,7 @@ class EditUserPage extends React.Component<any> {
   };
   token: string = "";
   user :UserDataModel = { name: "", email: "", id: "" };
-  isValidDict: {[key: string]: boolean} = {name: true, email: true};
+  isValidDict: {[key: string]: boolean} = {name: false, email: false};
 
   toast: RefObject<Toast>;
 
@@ -40,6 +40,7 @@ class EditUserPage extends React.Component<any> {
     this.toast = React.createRef();
     if (props.selectedUser && props.selectedUser[0]) {
       this.user = {...props.selectedUser[0]};
+      this.isValidDict = {name: true, email: true};
     } else {
       this.user = { email: '', name: '' };
     }
@@ -219,18 +220,14 @@ this.props.setLoadingState(true);
 
     return (
       <React.Fragment>
-        <h1>Userek</h1>
         <div>
-          <InputField config={confEmail} value={this.user.email}
-            onInputValueChange={this.setEmail} />
+          <InputField config={confEmail} value={this.user.email} onInputValueChange={this.setEmail} />
         </div>
         <div>
-          <InputField config={confName} value={this.user.name}
-            onInputValueChange={this.setName} />
+          <InputField config={confName} value={this.user.name} onInputValueChange={this.setName} />
         </div>
         <div>
-          <InputNumeric config={confAvailableHolidays} value={this.state.holidays}
-            onInputValueChange={this.setHolidays} />
+          <InputNumeric config={confAvailableHolidays} value={this.state.holidays} onInputValueChange={this.setHolidays} />
         </div>
         <Button disabled={!this.state.formIsValid} className="btn-action" onClick={this.sendRequest}>Mentés</Button>
         <Button className="btn-action" onClick={this.props.onModalClose}>Mégse</Button>
@@ -241,7 +238,7 @@ this.props.setLoadingState(true);
 };
 
 function mapStateToProps(state :any) {
-  const token = state.user.token;
+  const token = state.appcontext.token;
   return {
     token
   };
