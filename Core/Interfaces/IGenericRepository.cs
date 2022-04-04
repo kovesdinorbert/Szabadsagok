@@ -11,6 +11,7 @@ namespace Core.Interfaces
         Task<T> FindByIdAsync(int id);
         Task<List<T>> FindAllAsync(Expression<Func<T, bool>> where, params Func<IQueryable<T>, IQueryable<T>>[] includes);
         Task CreateAsync(T entity, int userId);
+        Task CreateAsync(IList<T> entities, int userId);
         Task UpdateAsync(T entity, int userId);
         Task DeleteAsync(T entity);
         Task DeleteAsync(int id);

@@ -9,5 +9,6 @@ namespace Core.Interfaces
     {
         Task SetYearData(List<YearConfig> yearConfigs, int currentUserId);
         Task<List<YearConfig>> GetYearConfigs(int year);
+        Task<List<YearConfig>> FillEmptyYearConfigs(int year, int currentUserId);
     }
 }

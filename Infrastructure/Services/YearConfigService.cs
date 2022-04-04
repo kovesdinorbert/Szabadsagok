@@ -18,7 +18,32 @@ namespace Infrastructure.Services
 
         public async Task<List<YearConfig>> GetYearConfigs(int year)
         {
-            return await _yearConfigRepository.FindAllAsync(yc => yc.Date.Year == year);
+            var configs = await _yearConfigRepository.FindAllAsync(yc => yc.Year == year);
+
+            return configs;
+        }
+
+        public async Task<List<YearConfig>> FillEmptyYearConfigs(int year, int currentUserId)
+        {
+            var ret = new List<YearConfig>();
+
+            var firstDay = new DateTime(year, 1, 1 );
+            var lastDay = new DateTime(year, 12, 31 );
+            for (var date = firstDay; date <= lastDay; date = date.AddDays(1))
+            {
+                ret.Add(new YearConfig()
+                {
+                    Year = year,
+                    Date = date,
+                    Type = (date.DayOfWeek == DayOfWeek.Saturday || date.DayOfWeek == DayOfWeek.Sunday) 
+                                ? Core.Enums.DayTypeEnum.Weekend 
+                                : Core.Enums.DayTypeEnum.Workday
+                }); 
+            }
+
+            await _yearConfigRepository.CreateAsync(ret, currentUserId);
+
+            return ret;
         }
 
         public async Task SetYearData(List<YearConfig> yearConfigs, int currentUserId)

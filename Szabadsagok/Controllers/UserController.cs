@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Core.Entities;
+using Core.Enums;
 using Core.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -40,6 +41,7 @@ namespace Szabadsagok.Controllers
         {
             //var user = await _userService.Login(login.Email, login.Password);
             var user = await _userService.GetUser(int.Parse("1"));
+            await _userService.UpdateUser(user, 1);
             if (user != null)
             {
                 var token = await _userService.GenerateToken(user);

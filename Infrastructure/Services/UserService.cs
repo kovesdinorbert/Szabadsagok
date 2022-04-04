@@ -53,7 +53,7 @@ namespace Infrastructure.Services
 
             //foreach (var userRole in user.Role)
             //{
-                claims.Add(new Claim(ClaimTypes.Role, user.Role.ToString()));
+                claims.Add(new Claim(ClaimTypes.Role, string.Concat(user.Roles.Select(r => r.ToString()))));
                 claims.Add(new Claim(ClaimTypes.Email, user.Email));
                 claims.Add(new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()));
             //}
@@ -94,8 +94,8 @@ namespace Infrastructure.Services
             var user = new User()
             {
                 Deleted = false,
-                Role = Core.Enums.RoleEnum.Common
             };
+            user.Roles.Add(Core.Enums.RoleEnum.Common);
             if (!string.IsNullOrWhiteSpace(name) && !string.IsNullOrWhiteSpace(email))
             {
                 user.Name = name;

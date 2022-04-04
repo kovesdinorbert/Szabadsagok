@@ -1,10 +1,11 @@
 ﻿using Core.Enums;
 using System;
 
-namespace Core.Entities
+namespace Szabadsagok.Dto
 {
-    public class YearConfig: _CrudBase
-    {   
+    public class YearConfigDto: IHasIdDto
+    {
+        public string Id { get; set; }
         public int Year { get; set; }
         public DateTime Date { get; set; }
         public DayTypeEnum Type { get; set; }

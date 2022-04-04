@@ -31,6 +31,12 @@ namespace Szabadsagok.App_Conf
 
             CreateMap<UserDataDto, User>()
                 .IncludeBase<IHasIdDto, IHasId>();
+
+            CreateMap<YearConfigDto, YearConfig>()
+                .IncludeBase<IHasIdDto, IHasId>();
+
+            CreateMap<YearConfig, YearConfigDto>()
+                .IncludeBase<IHasId, IHasIdDto>();
         }
     }
 }

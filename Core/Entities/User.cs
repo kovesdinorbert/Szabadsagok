@@ -11,7 +11,7 @@ namespace Core.Entities
         public string Name { get; set; }
         public string Email { get; set; }
         public bool Deleted { get; set; }
-        public RoleEnum Role { get; set; }
-        public List<Holiday> Holidays { get; set; } = new List<Holiday>();
+        public ICollection<RoleEnum> Roles { get; set; } = new List<RoleEnum>();
+        public ICollection<Holiday> Holidays { get; set; } = new List<Holiday>();
     }
 }

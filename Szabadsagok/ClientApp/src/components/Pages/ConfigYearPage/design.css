@@ -1,0 +1,16 @@
+
+.weekend-day {
+    background-color: burlywood;
+}
+
+.freeday-day {
+    background-color: green;
+}
+
+.workday-day {
+    background-color:inherit !important;
+}
+
+.fc-day-today {
+  background-color:inherit !important;
+}

@@ -1,5 +1,6 @@
 ﻿using Core.Configuration;
 using Core.Entities;
+using Core.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using System;
@@ -42,6 +43,16 @@ namespace Infrastructure.Data
             modelBuilder.Entity<HolidayConfig>().Property(p => p.Id).ValueGeneratedOnAdd();
             modelBuilder.Entity<User>().Property(p => p.Id).ValueGeneratedOnAdd();
             modelBuilder.Entity<YearConfig>().Property(p => p.Id).ValueGeneratedOnAdd();
+
+            var jsonConverter = new EnumCollectionJsonValueConverter<RoleEnum>();
+            var comparer = new CollectionValueComparer<RoleEnum>();
+
+            modelBuilder.Entity<User>()
+                .Property(e => e.Roles)
+                .HasConversion(jsonConverter)
+                .Metadata.SetValueComparer(comparer);
+
+            modelBuilder.Entity<YearConfig>().HasIndex(p => p.Year);
         }
     }
 }

@@ -37,6 +37,25 @@ namespace Infrastructure.Repository
             await _context.SaveChangesAsync();
         }
 
+        public async Task CreateAsync(IList<T> entities, int userId)
+        {
+            if (typeof(T).IsSubclassOf(typeof(_CrudBase)))
+            {
+                foreach (var entity in entities)
+                {
+                    ((IHasCrud)entity).Created = DateTime.Now;
+                    ((IHasCrud)entity).CreatedBy = userId;
+                    ((IHasCrud)entity).IsActive = true;
+                }
+            }
+            //if (typeof(IHasId).IsAssignableFrom(typeof(T)))
+            //{
+            //    ((IHasId)entity).Id = new int();
+            //}
+            _table.AddRange(entities);
+            await _context.SaveChangesAsync();
+        }
+
         public async Task DeleteAsync(T entity)
         {
             _table.Remove(entity);
