@@ -12,6 +12,7 @@ import { InputTextAreaModel } from '../../Common/InputTextArea/InputTextAreaMode
 import * as UserStore from '../../../store/AppContextStore';
 
 import './design.css';
+import CalendarBase from '../../Component/CalendarBase/CalendarBase';
 
     
 class HolidayPage extends React.PureComponent<any> {
@@ -151,7 +152,9 @@ class HolidayPage extends React.PureComponent<any> {
     return (
       <React.Fragment>
         <h1>Új igény rögzítése</h1>
-        <FullCalendar selectable={true}
+        
+        <CalendarBase dateSelected={this.dateSelected}></CalendarBase>
+        {/* <FullCalendar selectable={true}
           locale={'hu'}
           headerToolbar={{
             right: 'prev,next',
@@ -164,7 +167,7 @@ class HolidayPage extends React.PureComponent<any> {
           selectOverlap={false}
           unselectAuto={false}
           selectMirror={true}
-        />
+        /> */}
         {moment(this.state.start).isValid()
           ? <label>{moment(this.state.start).format('YYYY. MMMM DD.')} - {moment(this.state.end).format('YYYY. MMMM DD.')}</label> 
           : <></>}

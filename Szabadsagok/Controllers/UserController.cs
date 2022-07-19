@@ -18,7 +18,7 @@ namespace Szabadsagok.Controllers
     [Authorize]
     [Route("api/[controller]")]
     [ApiController]
-    public class UserController : Controller
+    public class UserController : BaseController
     {
         private readonly IUserService _userService;
         private readonly IDataProtectionMapProvider _dataProtectionMapProvider;
@@ -63,12 +63,7 @@ namespace Szabadsagok.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetAllUsers()
         {
-            var idStr = ClaimHelper.GetClaimData(User, ClaimTypes.NameIdentifier);
-
-            if (string.IsNullOrWhiteSpace(idStr) || !int.TryParse(idStr, out var userId))
-            {
-                return Unauthorized();
-            }
+            GetUserIdFromToken();
 
             List<UserListDto> ret;
             try
@@ -95,12 +90,7 @@ namespace Szabadsagok.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> UpdateUser(UserDataDto userData)
         {
-            var idStr = ClaimHelper.GetClaimData(User, ClaimTypes.NameIdentifier);
-
-            if (string.IsNullOrWhiteSpace(idStr) || !int.TryParse(idStr, out var userId))
-            {
-                return Unauthorized();
-            }
+            var userId = GetUserIdFromToken();
 
             UserDataDto ret;
 
@@ -123,12 +113,7 @@ namespace Szabadsagok.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> CreateUser(UserDataDto userData)
         {
-            var idStr = ClaimHelper.GetClaimData(User, ClaimTypes.NameIdentifier);
-
-            if (string.IsNullOrWhiteSpace(idStr) || !int.TryParse(idStr, out var userId))
-            {
-                return Unauthorized();
-            }
+            var userId = GetUserIdFromToken();
 
             UserDataDto ret;
 
@@ -154,12 +139,7 @@ namespace Szabadsagok.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> DeleteUser(string id)
         {
-            var idStr = ClaimHelper.GetClaimData(User, ClaimTypes.NameIdentifier);
-
-            if (string.IsNullOrWhiteSpace(idStr) || !int.TryParse(idStr, out var userId))
-            {
-                return Unauthorized();
-            }
+            var userId = GetUserIdFromToken();
 
             try
             {

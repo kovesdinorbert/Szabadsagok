@@ -23,6 +23,13 @@ namespace Infrastructure.Services
             return configs;
         }
 
+        public async Task<List<YearConfig>> GetYearConfigs(DateTime start, DateTime end)
+        {
+            var configs = await _yearConfigRepository.FindAllAsync(yc => yc.Date >= start && yc.Date <= end);
+
+            return configs;
+        }
+
         public async Task<List<YearConfig>> FillEmptyYearConfigs(int year, int currentUserId)
         {
             var ret = new List<YearConfig>();
@@ -46,17 +53,16 @@ namespace Infrastructure.Services
             return ret;
         }
 
-        public async Task SetYearData(List<YearConfig> yearConfigs, int currentUserId)
+        public async Task SetYearData(YearConfig yearConfig, int currentUserId)
         {
-            int year = yearConfigs.First().Date.Year;
-            var oldYearConfigs = await _yearConfigRepository.FindAllAsync(yc => yc.Date.Year == year);
+            var yc = (await _yearConfigRepository.FindAllAsync(yc => yc.Year == yearConfig.Year && yc.Date == yearConfig.Date)).FirstOrDefault();
 
-            foreach (var oldYearConfig in oldYearConfigs)
+            if (yc != null)
             {
-                await _yearConfigRepository.DeleteAsync(oldYearConfig);
+                yc.Type = yearConfig.Type;
+                await _yearConfigRepository.UpdateAsync(yc, currentUserId);
             }
-
-            foreach (var yearConfig in yearConfigs)
+            else
             {
                 await _yearConfigRepository.CreateAsync(yearConfig, currentUserId);
             }

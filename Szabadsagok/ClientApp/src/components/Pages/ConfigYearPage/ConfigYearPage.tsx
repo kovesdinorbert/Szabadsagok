@@ -1,38 +1,50 @@
-import React, { RefObject } from 'react';
+import React, { RefObject  } from 'react';
 import { connect } from 'react-redux';
-import { Toast } from 'primereact/toast';
 import * as UserStore from '../../../store/AppContextStore';
-import FullCalendar, { DateSelectArg } from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import interactionPlugin from '@fullcalendar/interaction';
-import { YearConfigModel } from './YearConfigModel';
+import { YearConfigModel } from '../../Component/CalendarBase/YearConfigModel';
 import moment from 'moment';
 import { DayTypeEnum } from '../../../enums/DayTypeEnum';
-
-import './design.css';
+import CalendarBase from '../../Component/CalendarBase/CalendarBase';
+import { Dialog } from 'primereact/dialog';
+import { DayConfigModel } from './DayConfigModel';
+import { Dropdown } from 'primereact/dropdown';
+import { Button } from 'reactstrap';
 
 export interface IState {
-  loaded: boolean
+  selectedDay: Date | null;
+  selectedType: {name: string, type: DayTypeEnum};
 }
 
 class ConfigYearPage extends React.Component<any> {
 
   public state: IState = {
-    loaded: false
+    selectedDay: null,
+    selectedType: {name: "", type: DayTypeEnum.Freeday},
   };
   token: string = "";
 
-  toast: RefObject<Toast>;
   yearData: YearConfigModel[] = [];
-
+  types: any = [];
+  calendarRef: RefObject<typeof CalendarBase>;
+  
   constructor(props: any) {
     super(props);
     this.auth = this.auth.bind(this);
     this.sendRequest = this.sendRequest.bind(this);
-    this.dateSelected = this.dateSelected.bind(this);
     this.dayRenderer = this.dayRenderer.bind(this);
+    this.dateClick = this.dateClick.bind(this);
+    this.onTypeChange = this.onTypeChange.bind(this);
+    this.getYearData = this.getYearData.bind(this);
 
-    this.toast = React.createRef();
+    this.calendarRef = React.createRef();
+
+    this.types = [
+      { name: 'Hétköznap', type: DayTypeEnum.Workday },
+      { name: 'Hétvége', type: DayTypeEnum.Weekend },
+      { name: 'Ünnepnap', type: DayTypeEnum.Freeday },
+    ];
   }
 
   componentDidMount() {
@@ -44,10 +56,6 @@ class ConfigYearPage extends React.Component<any> {
     }
   }
 
-  private showToast(severity: string, summary: string, detail: string) {
-    if (this.toast.current !== null)
-      this.toast.current.show({ severity: severity, summary: summary, detail: detail, life: 3000 });
-  }
 
   private auth() {
     let url = `${process.env.REACT_APP_API_PATH}/user/authenticate`;
@@ -63,18 +71,15 @@ class ConfigYearPage extends React.Component<any> {
     fetch(url, requestOptions)
       .then(async response => {
         if (!response.ok) {
-          this.showToast('error', 'Sikertelen művelet', 'Sikertelen művelet');
         } else {
           response.json().then((resp: any) => {
             this.token = resp.token;
             this.props.saveToken(this.token);
-            this.showToast('success', 'Sikeres művelet', 'Sikeres művelet');
           });
         }
         this.setState({ body: "", blocking: false, subject: "", name: "", email: "", showMessage: true });
       })
       .catch(error => {
-        this.showToast('error', 'Sikertelen művelet', 'Sikertelen művelet');
       });
   }
 
@@ -95,9 +100,10 @@ class ConfigYearPage extends React.Component<any> {
         if (!response.ok) {
           this.props.showToastrMessage({severity: 'error', summary:'Sikertelen művelet', detail: 'Sikertelen művelet'});
         } else {
-          const data: YearConfigModel[] = await response.json();
-          this.yearData = data;
-          this.setState({loaded: true});
+          var bla = this.calendarRef;
+          debugger;
+          //ref működik?
+          // this.calendarRef?.current?.changeDayType(new YearConfigModel());
           this.props.showToastrMessage({severity: 'success', summary:'Sikeres művelet', detail: 'Sikeres művelet'});
         }
         // this.setState({ body: "", subject: "", name: "", email: "", showMessage: true });
@@ -109,46 +115,44 @@ class ConfigYearPage extends React.Component<any> {
       });
   }
   
-  private dayRenderer( date: any ) {
-    const currentDay: YearConfigModel[] | undefined = this.yearData.filter(y => moment(y.date).isSame(moment(date.date)));
-    if (currentDay.length > 0 && currentDay[0].type === DayTypeEnum.Weekend) {
-      return [ 'weekend-day' ];
-    } else if (currentDay.length > 0 && currentDay[0].type === DayTypeEnum.Freeday) {
-      return [ 'freeday-day' ];
-    } else {
-      return ['workday-day'];
-    }
+  private dayRenderer() {
+    debugger;
+    const currentDay: YearConfigModel[] | undefined = this.yearData.filter(y => moment(y.date).isSame(moment(this.state.selectedDay)));
+    if (currentDay.length > 0) {
+      currentDay[0].type = this.state.selectedType.type;
+      // this.calendarRef?.current?.changeDayType();
+    } 
+   }
+  
+  private getYearData( dates: YearConfigModel[] ) {
+    debugger;
+    this.yearData = dates;
+    // const currentDay: YearConfigModel[] | undefined = this.yearData.filter(y => moment(y.date).isSame(moment(date.date)));
+    // if (currentDay.length > 0 && currentDay[0].type === DayTypeEnum.Weekend) {
+    //   return [ 'weekend-day' ];
+    // } else if (currentDay.length > 0 && currentDay[0].type === DayTypeEnum.Freeday) {
+    //   return [ 'freeday-day' ];
+    // } else {
+    //   return ['workday-day'];
+    // }
    }
 
-  private dateSelected(e: DateSelectArg): void {
-    // this.setState({ start: moment(e.start).utc(), end: moment(e.end).utc() });
-    // this.isValidDict["start"] = moment(e.start).isValid();
-    // this.isValidDict["end"] = moment(e.end).isValid();
-    // this.setFormIsValid();
+  dateClick(info: any){
+    this.setState({selectedDay: moment(info.date).toDate()});
   }
 
+  onTypeChange(type: any) {
+    this.setState({selectedType: type.value});
+  }
 
   public render() {
     return (
       <React.Fragment>
         <h1>Év beállítása</h1>
-        {this.state.loaded ? 
-        <FullCalendar selectable={true}
-          locale={'hu'}
-          headerToolbar={{
-            right: 'prev,next',
-            center: 'title',
-            left: ''
-          }}
-          plugins={[interactionPlugin, dayGridPlugin]}
-          initialView="dayGridMonth"
-          select={this.dateSelected}
-          selectOverlap={false}
-          unselectAuto={false}
-          selectMirror={true}
-          dayCellClassNames={this.dayRenderer} 
-        />: <></>
-      }
+        <CalendarBase ref={this.calendarRef} selectable={false} dateClick={this.dateClick} getYearData={this.getYearData}></CalendarBase>
+        <label>Nap típusa:</label>
+        <Dropdown value={this.state.selectedType} options={this.types} onChange={this.onTypeChange} optionLabel="name"/>
+        <Button label="Mentés" onClick={this.dayRenderer} />
       </React.Fragment>
     );
   }
@@ -164,4 +168,4 @@ function mapStateToProps(state :any) {
 export default connect(
   mapStateToProps,
   UserStore.actionCreators
-)(ConfigYearPage);
+) (ConfigYearPage);

@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using Szabadsagok.App_Conf;
 using Szabadsagok.Dto;
 using Szabadsagok.Helpers;
 
@@ -17,18 +18,21 @@ namespace Szabadsagok.Controllers
     [Authorize]
     [ApiController]
     [Route("api/[controller]")]
-    public class HolidayController : Controller
+    public class HolidayController : BaseController
     {
         private readonly IHolidayService _holidayService;
         private readonly IUserService _userService;
         private readonly IMapper _mapper;
+        private readonly IDataProtectionMapProvider _dataProtectionMapProvider;
 
         public HolidayController(IHolidayService holidayService,
                                  IUserService userService,
+                                 IDataProtectionMapProvider dataProtectionMapProvider,
                                  IMapper mapper)
         {
             _holidayService = holidayService;
             _userService = userService;
+            _dataProtectionMapProvider = dataProtectionMapProvider;
             _mapper = mapper;
         }
 
@@ -38,12 +42,7 @@ namespace Szabadsagok.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetAllFutureHolidays()
         {
-            var idStr = ClaimHelper.GetClaimData(User, ClaimTypes.NameIdentifier);
-
-            if (string.IsNullOrWhiteSpace(idStr) || !int.TryParse(idStr, out var userId))
-            {
-                return Unauthorized();
-            }
+            GetUserIdFromToken();
 
             List<IncomingHolidayDto> ret;
             try
@@ -70,12 +69,7 @@ namespace Szabadsagok.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> CreateHoliday(HolidayRequestDto requestDto)
         {
-            var idStr = ClaimHelper.GetClaimData(User, ClaimTypes.NameIdentifier);
-
-            if (string.IsNullOrWhiteSpace(idStr) || !int.TryParse(idStr, out var userId))
-            {
-                return Unauthorized();
-            }
+            var userId = GetUserIdFromToken();
 
             try
             {
@@ -90,9 +84,23 @@ namespace Szabadsagok.Controllers
         }
 
         [HttpDelete]
-        public async Task<IActionResult> DeleteHoliday(int userId, DateTime start, DateTime end)
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> DeleteHoliday(string id)
         {
-            return View();
+            var userId = GetUserIdFromToken();
+
+            try
+            {
+                await _holidayService.DeleteHoliday(int.Parse(_dataProtectionMapProvider.Unprotect(id)), userId);
+            }
+            catch (Exception e)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError);
+            }
+
+            return Ok();
         }
 
         [HttpPost]

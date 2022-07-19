@@ -4,11 +4,14 @@ import moment from 'moment';
 import { faEnvelopeSquare } from '@fortawesome/free-solid-svg-icons';
 import { IncomingHolidayModel } from './IncomingHolidayModel';
 import { InputTextAreaModel } from '../../Common/InputTextArea/InputTextAreaModel';
-import { DataTable } from 'primereact/datatable';
+import { DataTable, DataTableRowClassNameOptions } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { HolidayDistanceEnum } from './HolidayDistanceEnum';
 import * as UserStore from '../../../store/AppContextStore';
 import { RouteComponentProps } from 'react-router';
+import './design.css';
+
+
 export interface IState {
   holidays?: IncomingHolidayModel[];
 }
@@ -17,7 +20,7 @@ export interface IState {
 //     UserStore.UserState &
 //     typeof UserStore.actionCreators &
 //     RouteComponentProps<{}>;
-class IncomingHolidayPage extends React.Component<any>/*<CounterProps>*/ {
+class IncomingHolidays extends React.Component<any>/*<CounterProps>*/ {
 
   public state: IState = {
     holidays: undefined
@@ -27,6 +30,7 @@ class IncomingHolidayPage extends React.Component<any>/*<CounterProps>*/ {
   constructor(props: any) {
     super(props);
     this.sendRequest = this.sendRequest.bind(this);
+    this.getDistanceClass = this.getDistanceClass.bind(this);
     this.auth = this.auth.bind(this);
   }
 
@@ -108,6 +112,15 @@ class IncomingHolidayPage extends React.Component<any>/*<CounterProps>*/ {
       });
   }
 
+  getDistanceClass(data: any, options: DataTableRowClassNameOptions): object | string {
+    if (data.distance === HolidayDistanceEnum.Near) {
+      return "near-distance";
+    } else if (data.distance === HolidayDistanceEnum.Future) {
+      return "future-distance";
+    }
+    return "far-future-distance";
+  }
+
   public render() {
     let confReason: InputTextAreaModel = {
       label: 'Email cím',
@@ -123,11 +136,10 @@ class IncomingHolidayPage extends React.Component<any>/*<CounterProps>*/ {
       <React.Fragment>
         <h1>Közelgő szabadságok</h1>
         {this.state.holidays
-          ? <DataTable value={this.state.holidays}>
-            <Column field="start" header="Kezdete"></Column>
-            <Column field="end" header="Vége"></Column>
-            <Column field="userName" header="Felhasználó"></Column>
-            <Column field="distance" header="Távolság"></Column>
+          ? <DataTable value={this.state.holidays} rowClassName={this.getDistanceClass}>
+              <Column field="userName" header="Felhasználó"></Column>
+              <Column field="start" header="Kezdete"></Column>
+              <Column field="end" header="Vége"></Column>
           </DataTable>
           : <></>}
       </React.Fragment>
@@ -145,4 +157,4 @@ function mapStateToProps(state :any) {
 export default connect(
   mapStateToProps,
   UserStore.actionCreators
-)(IncomingHolidayPage);
+)(IncomingHolidays);

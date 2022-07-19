@@ -1,7 +1,12 @@
 import React, { RefObject } from 'react';
 import { connect } from 'react-redux';
-import { Toast } from 'primereact/toast';
 import * as AppContextStore from '../../../store/AppContextStore';
+import CalendarBase from '../../Component/CalendarBase/CalendarBase';
+import IncomingHolidays from '../../Component/IncomingHolidays/IncomingHolidays';
+import { Calendar } from 'primereact/calendar';
+
+import './design.css';
+import EventPage from '../../Component/EventPage/EventPage';
 
 export interface IState {
 }
@@ -11,27 +16,20 @@ class HomePage extends React.Component<any> {
   public state: IState = {
   };
   token: string = "";
-
-  toast: RefObject<Toast>;
+  date7: any = "";
 
   constructor(props: any) {
     super(props);
     this.auth = this.auth.bind(this);
-
-    this.toast = React.createRef();
+    this.setDate7 = this.setDate7.bind(this);
   }
 
   componentDidMount() {
     if (!this.props.token) {
-     this.auth();
+      this.auth();
     } else {
       this.token = this.props.token;
     }
-  }
-
-  private showToast(severity: string, summary: string, detail: string) {
-    if (this.toast.current !== null)
-      this.toast.current.show({ severity: severity, summary: summary, detail: detail, life: 3000 });
   }
 
   private auth() {
@@ -48,33 +46,41 @@ class HomePage extends React.Component<any> {
     fetch(url, requestOptions)
       .then(async response => {
         if (!response.ok) {
-          this.showToast('error', 'Sikertelen művelet', 'Sikertelen művelet');
         } else {
           response.json().then((resp: any) => {
             this.token = resp.token;
             this.props.saveToken(this.token);
-            this.showToast('success', 'Sikeres művelet', 'Sikeres művelet');
           });
         }
         this.setState({ body: "", blocking: false, subject: "", name: "", email: "", showMessage: true });
       })
       .catch(error => {
-        this.showToast('error', 'Sikertelen művelet', 'Sikertelen művelet');
       });
   }
 
+  setDate7(value: any) {
+    debugger;
+  }
 
   public render() {
     return (
       <React.Fragment>
-        <h1>Nyitólap</h1>
-        <Toast ref={this.toast} />
+        <div className='home-page-block'>
+          <h1>Nyitólap</h1>
+          <CalendarBase selectable={false}></CalendarBase>
+        </div>
+        <div className='home-page-block'>
+          <EventPage />
+        </div>
+        <div className='home-page-block'>
+          <IncomingHolidays></IncomingHolidays>
+        </div>
       </React.Fragment>
     );
   }
 };
 
-function mapStateToProps(state :any) {
+function mapStateToProps(state: any) {
   const token = state.appcontext.token;
   return {
     token

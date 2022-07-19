@@ -25,6 +25,7 @@ namespace Infrastructure.Data
         public virtual DbSet<User> Users { get; set; }
         public virtual DbSet<HolidayConfig> HolidayConfigs { get; set; }
         public virtual DbSet<YearConfig> YearConfigs { get; set; }
+        public virtual DbSet<Event> Events { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -37,12 +38,14 @@ namespace Infrastructure.Data
             modelBuilder.Entity<User>().ToTable("Users");
             modelBuilder.Entity<HolidayConfig>().ToTable("HolidayConfigs");
             modelBuilder.Entity<YearConfig>().ToTable("YearConfigs");
+            modelBuilder.Entity<Event>().ToTable("Events");
 
 
             modelBuilder.Entity<Holiday>().Property(p => p.Id).ValueGeneratedOnAdd();
             modelBuilder.Entity<HolidayConfig>().Property(p => p.Id).ValueGeneratedOnAdd();
             modelBuilder.Entity<User>().Property(p => p.Id).ValueGeneratedOnAdd();
             modelBuilder.Entity<YearConfig>().Property(p => p.Id).ValueGeneratedOnAdd();
+            modelBuilder.Entity<Event>().Property(p => p.Id).ValueGeneratedOnAdd();
 
             var jsonConverter = new EnumCollectionJsonValueConverter<RoleEnum>();
             var comparer = new CollectionValueComparer<RoleEnum>();
@@ -53,6 +56,7 @@ namespace Infrastructure.Data
                 .Metadata.SetValueComparer(comparer);
 
             modelBuilder.Entity<YearConfig>().HasIndex(p => p.Year);
+            modelBuilder.Entity<Event>().HasIndex(p => p.StartDate);
         }
     }
 }

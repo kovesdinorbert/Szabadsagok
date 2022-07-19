@@ -13,7 +13,7 @@ namespace Core.Interfaces
         Task CreateAsync(T entity, int userId);
         Task CreateAsync(IList<T> entities, int userId);
         Task UpdateAsync(T entity, int userId);
-        Task DeleteAsync(T entity);
-        Task DeleteAsync(int id);
+        Task DeleteAsync(T entity, int userId);
+        Task DeleteAsync(int id, int userId);
     }
 }

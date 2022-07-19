@@ -1,0 +1,11 @@
+.near-distance {
+    background-color: aqua !important;
+}
+
+.future-distance {
+    background-color: blue !important;
+}
+
+.far-future-distance {
+    background-color: red !important;
+}

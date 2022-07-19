@@ -24,9 +24,6 @@ export default class NavMenu extends React.PureComponent<{}, { isOpen: boolean }
                                     <NavLink tag={Link} className="text-dark" to="/request">Új szabadság</NavLink>
                                 </NavItem>
                                 <NavItem>
-                                    <NavLink tag={Link} className="text-dark" to="/incoming">Közelgő szabadságok</NavLink>
-                                </NavItem>
-                                <NavItem>
                                     <NavLink tag={Link} className="text-dark" to="/users">Felhasználók</NavLink>
                                 </NavItem>
                                 <NavItem>

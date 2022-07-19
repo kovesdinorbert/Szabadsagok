@@ -17,7 +17,7 @@ namespace Szabadsagok.Controllers
     [Authorize]
     [ApiController]
     [Route("api/[controller]")]
-    public class YearController : Controller
+    public class YearController : BaseController
     {
         private readonly IYearConfigService _yearConfigService;
         private readonly IMapper _mapper;
@@ -35,12 +35,7 @@ namespace Szabadsagok.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetYear(int year)
         {
-            var idStr = ClaimHelper.GetClaimData(User, ClaimTypes.NameIdentifier);
-
-            if (string.IsNullOrWhiteSpace(idStr) || !int.TryParse(idStr, out var userId))
-            {
-                return Unauthorized();
-            }
+            var userId = GetUserIdFromToken();
 
             List<YearConfigDto> ret;
             try
@@ -61,9 +56,26 @@ namespace Szabadsagok.Controllers
         }
 
         [HttpPost]
-        public IActionResult SetYearData(List<YearConfig> yearConfig)
+        [ProducesResponseType(typeof(YearConfigDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> SetYearData(YearConfigDto yearConfig)
         {
-            return View();
+            var userId = GetUserIdFromToken();
+
+            YearConfigDto ret;
+
+            try
+            {
+                var dayConfig = _mapper.Map<YearConfig>(yearConfig);
+                await _yearConfigService.SetYearData(dayConfig, userId);
+            }
+            catch (Exception e)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError);
+            }
+
+            return Ok();
         }
     }
 }

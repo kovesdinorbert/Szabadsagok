@@ -7,8 +7,9 @@ namespace Core.Interfaces
 {
     public interface IYearConfigService
     {
-        Task SetYearData(List<YearConfig> yearConfigs, int currentUserId);
+        Task SetYearData(YearConfig yearConfig, int currentUserId);
         Task<List<YearConfig>> GetYearConfigs(int year);
+        Task<List<YearConfig>> GetYearConfigs(DateTime start, DateTime end);
         Task<List<YearConfig>> FillEmptyYearConfigs(int year, int currentUserId);
     }
 }

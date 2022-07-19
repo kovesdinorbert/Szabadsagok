@@ -13,24 +13,50 @@ namespace Infrastructure.Services
     {
         private readonly IGenericRepository<Holiday> _holidayRepository;
         private readonly IGenericRepository<HolidayConfig> _holidayConfigRepository;
+        private readonly IYearConfigService _yearConfigService;
 
         public HolidayService(IGenericRepository<Holiday> holidayRepository,
-                              IGenericRepository<HolidayConfig> holidayConfigRepository)
+                              IGenericRepository<HolidayConfig> holidayConfigRepository,
+                              IYearConfigService yearConfigService)
         {
             _holidayRepository = holidayRepository;
             _holidayConfigRepository = holidayConfigRepository;
+            _yearConfigService = yearConfigService;
         }
 
         public async Task CreateHoliday(Holiday holiday, int currentUserId)
         {
+            var requestedHolidays = (await _holidayRepository.FindAllAsync(h => h.UserId == currentUserId && h.Status == StatusEnum.Requested));
+            if (requestedHolidays.Any())
+            {
+                throw new Exception("van kiírt szabadság, amit még nem bíráltak el");
+            }
+
+            var yearconfigs = await _yearConfigService.GetYearConfigs(holiday.Start, holiday.End);
+
             holiday.UserId = currentUserId;
-            holiday.HolidayCount = 0;//calculation
-            await _holidayRepository.CreateAsync(holiday, currentUserId);
+            holiday.HolidayCount = yearconfigs.Where(yc => yc.Type == DayTypeEnum.Workday).Count();
+
+            if ((await GetAvailableHolidayNumber(currentUserId)) - holiday.HolidayCount >= 0)
+            {
+                await _holidayRepository.CreateAsync(holiday, currentUserId);
+            }
+            else
+            {
+                throw new Exception("nincs elég elérhető szabadnap");
+            }
         }
 
-        public async Task DeleteHoliday(int holidayId)
+        public async Task DeleteHoliday(int holidayId, int currentUserId)
         {
-            await _holidayRepository.DeleteAsync(holidayId);
+            var holiday = await _holidayRepository.FindByIdAsync(holidayId);
+            if (holiday == null ) throw new ArgumentNullException(nameof(holiday));
+            if (holiday.Start.Date <= DateTime.Now.Date)
+            {
+                throw new Exception("már elkezdett szabadság nem törölhető");
+            }
+            holiday.Status = StatusEnum.Deleted;
+            await _holidayRepository.UpdateAsync(holiday, currentUserId);
         }
 
         public async Task<int> GetAvailableHolidayNumber(int userId)

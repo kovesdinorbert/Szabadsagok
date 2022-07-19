@@ -63,6 +63,7 @@ namespace Szabadsagok
             services.AddScoped(typeof(IHolidayService), typeof(HolidayService));
             services.AddScoped(typeof(IYearConfigService), typeof(YearConfigService));
             services.AddScoped(typeof(IEmailService), typeof(EmailService));
+            services.AddScoped(typeof(IEventService), typeof(EventService));
             services.AddSingleton(typeof(IDataProtectionMapProvider), typeof(DataProtectionMapProvider));
             services.AddSingleton(provider => new MapperConfiguration(cfg =>
             {

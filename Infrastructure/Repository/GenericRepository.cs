@@ -56,13 +56,29 @@ namespace Infrastructure.Repository
             await _context.SaveChangesAsync();
         }
 
-        public async Task DeleteAsync(T entity)
+        public async Task DeleteAsync(T entity, int userId)
         {
-            _table.Remove(entity);
-            await _context.SaveChangesAsync();
+            if (entity == null)
+            {
+                //log
+            }
+            else
+            {
+                if (typeof(T).IsSubclassOf(typeof(_CrudBase)))
+                {
+                    ((IHasCrud)entity).IsActive = false;
+                    ((IHasCrud)entity).Modified = DateTime.Now;
+                    ((IHasCrud)entity).ModifiedBy = userId;
+                }
+                else
+                {
+                    _table.Remove(entity);
+                }
+                await _context.SaveChangesAsync();
+            }
         }
 
-        public async Task DeleteAsync(int id)
+        public async Task DeleteAsync(int id, int userId)
         {
             var ret = await _table.FindAsync(id);
             if (ret == null)
@@ -74,6 +90,8 @@ namespace Infrastructure.Repository
                 if (typeof(T).IsSubclassOf(typeof(_CrudBase)))
                 {
                     ((IHasCrud)ret).IsActive = false;
+                    ((IHasCrud)ret).Modified = DateTime.Now;
+                    ((IHasCrud)ret).ModifiedBy = userId;
                 }
                 else
                 {
@@ -83,7 +101,7 @@ namespace Infrastructure.Repository
             }
         }
 
-        public async Task DeleteAsync(Expression<Func<T, bool>> where)
+        public async Task DeleteAsync(Expression<Func<T, bool>> where, int userId)
         {
             var toDelete = _table.Where(where);
 
@@ -92,6 +110,8 @@ namespace Infrastructure.Repository
                 if (typeof(T).IsSubclassOf(typeof(_CrudBase)))
                 {
                     ((IHasCrud)entity).IsActive = false;
+                    ((IHasCrud)entity).Modified = DateTime.Now;
+                    ((IHasCrud)entity).ModifiedBy = userId;
                 }
                 else
                 {

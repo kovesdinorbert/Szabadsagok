@@ -1,7 +1,8 @@
 import { DayTypeEnum } from "../../../enums/DayTypeEnum";
 
-export class DaySettingsModel {
-    month: number = 0;
-    day: number = 0;
+export class DayConfigModel {
+    id?: string;
+    year: number = 0;
+    date: Date | null = null;
     type: DayTypeEnum = DayTypeEnum.Workday;
 }
