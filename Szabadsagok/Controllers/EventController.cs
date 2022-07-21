@@ -85,10 +85,6 @@ namespace Szabadsagok.Controllers
                 await _eventService.AddNewEvent(_mapper.Map<Event>(newEvent), GetUserIdFromToken());
                 return StatusCode(StatusCodes.Status201Created);
             }
-            catch (AuthenticationException)
-            {
-                return StatusCode(StatusCodes.Status401Unauthorized);
-            }
             catch (ArgumentOutOfRangeException)
             {
                 return StatusCode(StatusCodes.Status500InternalServerError);

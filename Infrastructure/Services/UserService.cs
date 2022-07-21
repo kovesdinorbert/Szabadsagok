@@ -1,5 +1,7 @@
 ﻿using Core.Configuration;
 using Core.Entities;
+using Core.Enums;
+using Core.Exceptions;
 using Core.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -89,13 +91,16 @@ namespace Infrastructure.Services
             }
         }
 
-        public async Task<User> CreateUser(string name, string email, int currentUserId)
+        public async Task<User> CreateUser(string name, string email, List<RoleEnum> roles, int currentUserId)
         {
+            if (string.IsNullOrEmpty(name) || string.IsNullOrEmpty(email))
+                throw new BusinessLogicException("név és email megadása kötelező");
+
             var user = new User()
             {
                 Deleted = false,
             };
-            user.Roles.Add(Core.Enums.RoleEnum.Common);
+            user.Roles = roles == null || !roles.Any() ? new List<RoleEnum>() { RoleEnum.Common} : roles;
             if (!string.IsNullOrWhiteSpace(name) && !string.IsNullOrWhiteSpace(email))
             {
                 user.Name = name;
@@ -108,17 +113,34 @@ namespace Infrastructure.Services
 
         public async Task UpdateUser(User user, int currentUserId)
         {
-            if (!string.IsNullOrWhiteSpace(user.Name) 
-                && !string.IsNullOrWhiteSpace(user.Email)
-                && user.Id != 0)
+            if (string.IsNullOrEmpty(user.Name) || string.IsNullOrEmpty(user.Email))
+                throw new BusinessLogicException("név és email megadása kötelező");
+
+            if (user.Id <= 0)
+                throw new ArgumentNullException(nameof(user.Id));
+
+            var dbuser = await _userRepository.FindByIdAsync(user.Id);
+            if (dbuser == null)
+                throw new ArgumentNullException(nameof(user));
+
+            dbuser.Name = user.Name;
+            dbuser.Email = user.Email;
+            dbuser.Roles = user.Roles;
+            await _userRepository.UpdateAsync(dbuser, currentUserId);
+
+            await CreateHolidayConfigs(user.HolidayConfigs.ToList(), dbuser.Id, currentUserId);
+        }
+
+        private async Task CreateHolidayConfigs(List<HolidayConfig> holidayConfigs, int userId, int currentUserId)
+        {
+            foreach (var hcs in holidayConfigs.Where(hc => hc.Year > 0 && hc.MaxHoliday > 0))
             {
-                var dbuser = await _userRepository.FindByIdAsync(user.Id); 
-                if (user != null)
+                await _holidayConfigRepository.CreateAsync(new HolidayConfig()
                 {
-                    dbuser.Name = user.Name;
-                    dbuser.Email = user.Email;
-                    await _userRepository.UpdateAsync(dbuser, currentUserId);
-                }
+                    MaxHoliday = hcs.MaxHoliday,
+                    Year = hcs.Year,
+                    UserId = userId,
+                }, currentUserId);
             }
         }
 
@@ -135,10 +157,21 @@ namespace Infrastructure.Services
         public async Task SetHolidayConfig(int year, int maxHolidays, int userId, int currentUserId)
         {
             var holidayConfig = (await _holidayConfigRepository.FindAllAsync(hc => hc.UserId == userId && hc.Year == year)).FirstOrDefault();
+            
             if (holidayConfig != null)
             {
                 holidayConfig.MaxHoliday = maxHolidays;
                 await _holidayConfigRepository.UpdateAsync(holidayConfig, currentUserId);
+            }
+            else
+            {
+                await _holidayConfigRepository.CreateAsync(new HolidayConfig()
+                { 
+                    MaxHoliday = maxHolidays, 
+                    UserId = userId, 
+                    Year = year 
+                },
+                currentUserId);
             }
         }
     }

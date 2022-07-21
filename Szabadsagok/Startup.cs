@@ -97,6 +97,9 @@ namespace Szabadsagok
                 };
             });
 
+            //var app = builder.Build();
+            //app.MapGet("/auth", () => "This endpoint requires authorization")
+            //.RequireAuthorization();
             //services.AddAuthentication().AddMicrosoftAccount(microsoftOptions =>
             //{
             //    microsoftOptions.ClientId = appConfiguration.ClientId;

@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Core.Entities;
 using Core.Enums;
+using Core.Exceptions;
 using Core.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -57,15 +58,17 @@ namespace Szabadsagok.Controllers
             return Ok(ret);
         }
 
-        [HttpGet("holidayforuser/{id}")]
-        public async Task<IActionResult> GetHolidaysForUser(int userId)
+        [HttpGet("availableholidayforuser/{userId}")]
+        public async Task<IActionResult> GetAvailableHolidaysForUser(int userId)
         {
-            return View();
+            var value = await _holidayService.GetAvailableHolidayNumber(userId);
+            return Ok(value);
         }
 
         [HttpPut]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> CreateHoliday(HolidayRequestDto requestDto)
         {
@@ -74,6 +77,10 @@ namespace Szabadsagok.Controllers
             try
             {
                 await _holidayService.CreateHoliday(_mapper.Map<Holiday>(requestDto), userId);
+            }
+            catch (BusinessLogicException e)
+            {
+                return StatusCode(StatusCodes.Status403Forbidden, e.Message);
             }
             catch (Exception e)
             {
@@ -86,6 +93,7 @@ namespace Szabadsagok.Controllers
         [HttpDelete]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> DeleteHoliday(string id)
         {
@@ -94,6 +102,10 @@ namespace Szabadsagok.Controllers
             try
             {
                 await _holidayService.DeleteHoliday(int.Parse(_dataProtectionMapProvider.Unprotect(id)), userId);
+            }
+            catch (BusinessLogicException e)
+            {
+                return StatusCode(StatusCodes.Status403Forbidden, e.Message);
             }
             catch (Exception e)
             {
@@ -104,9 +116,28 @@ namespace Szabadsagok.Controllers
         }
 
         [HttpPost]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> UpdateHolidayStatus(int holidayId, StatusEnum status)
         {
-            return View();
+            var userId = GetUserIdFromToken();
+
+            try
+            {
+                await _holidayService.UpdateStatusHoliday(int.Parse(_dataProtectionMapProvider.Unprotect(holidayId)), status, userId);
+            }
+            catch (BusinessLogicException e)
+            {
+                return StatusCode(StatusCodes.Status403Forbidden, e.Message);
+            }
+            catch (Exception e)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError);
+            }
+
+            return Ok();
         }
     }
 }

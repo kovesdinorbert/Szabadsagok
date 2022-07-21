@@ -38,6 +38,12 @@ namespace Szabadsagok.App_Conf
             CreateMap<YearConfig, YearConfigDto>()
                 .IncludeBase<IHasId, IHasIdDto>();
 
+            CreateMap<HolidayConfig, HolidayForYearDto>()
+                .IncludeBase<IHasId, IHasIdDto>();
+
+            CreateMap<HolidayForYearDto, HolidayConfig>()
+                .IncludeBase<IHasIdDto, IHasId>();
+
             CreateMap<Event, EventDto>()
                 .IncludeBase<IHasId, IHasIdDto>();
 

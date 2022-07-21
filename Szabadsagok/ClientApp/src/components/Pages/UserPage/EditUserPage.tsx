@@ -1,24 +1,36 @@
 import React, { RefObject } from 'react';
 import { connect } from 'react-redux';
 import { Button } from 'primereact/button';
+import { MultiSelect } from 'primereact/multiselect';
+import { Calendar } from 'primereact/calendar';
 import InputField from '../../Common/InputField/InputField';
 import { InputFieldModel } from '../../Common/InputField/InputFieldModel';
-import { faEnvelopeSquare } from '@fortawesome/free-solid-svg-icons';
+import { faEnvelopeSquare, faQuran } from '@fortawesome/free-solid-svg-icons';
 import { InputNumericModel } from '../../Common/InputNumeric/InputNumericModel';
 import InputNumeric from '../../Common/InputNumeric/InputNumeric';
 import { UserDataModel } from './UserDataModel';
 import { Guid } from 'guid-typescript';
 import * as UserStore from '../../../store/AppContextStore';
+import { RoleEnum } from '../../../enums/RoleEnum';
+import moment from 'moment';
+import { HolidayForYearModel } from './HolidayForYearModel';
 
 class EditUserPage extends React.Component<any> {
 
   public state: any = {
     formIsValid: false,
     holidays: 0,
-    user: { name: "", email: "", id: Guid.EMPTY }
+    year: null,
+    user: { name: "", email: "", id: "", roles: null }
   };
   token: string = "";
-  user :UserDataModel = { name: "", email: "", id: "" };
+  user :UserDataModel = { name: "", email: "", id: "", roles: [] };
+  year: number = 0;
+  roles = [
+    {label: 'Általános', value: RoleEnum.Common},
+    {label: 'Elfogadó', value: RoleEnum.Accepter},
+    {label: 'Adminisztrátor', value: RoleEnum.Admin}
+  ];
   isValidDict: {[key: string]: boolean} = {name: false, email: false};
 
   constructor(props: any) {
@@ -27,19 +39,22 @@ class EditUserPage extends React.Component<any> {
     this.setFormIsValid = this.setFormIsValid.bind(this);
     this.setEmail = this.setEmail.bind(this);
     this.setName = this.setName.bind(this);
+    this.setYear = this.setYear.bind(this);
+    this.setRoles = this.setRoles.bind(this);
     this.setHolidays = this.setHolidays.bind(this);
     this.sendRequest = this.sendRequest.bind(this);
     this.auth = this.auth.bind(this);
-    
+
     if (props.selectedUser && props.selectedUser[0]) {
       this.user = {...props.selectedUser[0]};
       this.isValidDict = {name: true, email: true};
     } else {
-      this.user = { email: '', name: '' };
+      this.user = { email: '', name: '', roles: [] };
     }
   }
   
   componentDidMount() {
+    this.setState({user: {roles : this.user.roles}});
     if (!this.props.token) {
      this.auth();
     } else {
@@ -62,12 +77,23 @@ class EditUserPage extends React.Component<any> {
       this.setFormIsValid();
     }
     
+    private setYear(e: number, v: boolean): void {
+      this.year = e;
+    }
+    
+    private async setRoles(e: any) {
+      await this.setState({user: {roles: e}});
+
+      this.setFormIsValid();
+    }
+    
     private setHolidays(e: number, v: boolean): void {
     this.setFormIsValid();
   }
 
   private setFormIsValid() {
-    this.setState({ formIsValid: Object.keys(this.isValidDict).filter(key => !this.isValidDict[key]).length === 0 });
+    this.setState({ formIsValid: Object.keys(this.isValidDict).filter(key => !this.isValidDict[key]).length === 0
+                                 && this.state.user.roles && this.state.user.roles.length > 0 });
   }
 
   private reasonEnterPressed() {
@@ -111,6 +137,13 @@ this.props.setLoadingState(true);
     let url = ``;
 
     let userDataReq: UserDataModel = this.user;
+    userDataReq.roles = this.state.user.roles;
+    let holidayNumber: HolidayForYearModel = {
+      year: moment().year(),
+      maxHoliday: this.year
+    };
+    userDataReq.holidayConfigs = [];
+    userDataReq.holidayConfigs.push(holidayNumber);
     let requestOptions = {};
 
     if (userDataReq.id) {
@@ -195,6 +228,13 @@ this.props.setLoadingState(true);
       icon: { icon: faEnvelopeSquare },
       type: 'text',
     };
+    let confYear: InputNumericModel = {
+      label: 'Év ' + moment().year(),
+      id: "yearconf_id",
+      required: false,
+      icon: { icon: faEnvelopeSquare },
+      type: 'text',
+    };
 
     return (
       <React.Fragment>
@@ -206,6 +246,15 @@ this.props.setLoadingState(true);
         </div>
         <div>
           <InputNumeric config={confAvailableHolidays} value={this.state.holidays} onInputValueChange={this.setHolidays} />
+        </div>
+        <div>
+        <label htmlFor={"role_select"}>
+            Szerepkörök
+          </label>
+          <MultiSelect id='role_select' value={this.state.user.roles} options={this.roles} onChange={(e) => this.setRoles(e.value)} optionLabel="label" placeholder="" display="chip" />
+        </div>
+        <div>
+          <InputNumeric config={confYear} value={this.year} onInputValueChange={this.setYear} />
         </div>
         <Button disabled={!this.state.formIsValid} className="btn-action" onClick={this.sendRequest}>Mentés</Button>
         <Button className="btn-action" onClick={this.props.onModalClose}>Mégse</Button>

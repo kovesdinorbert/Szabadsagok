@@ -3,12 +3,6 @@ using Core.Entities;
 using Core.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Infrastructure.Data
 {
@@ -33,6 +27,10 @@ namespace Infrastructure.Data
                 .HasOne(bc => bc.User)
                 .WithMany(b => b.Holidays)
                 .HasForeignKey(bc => bc.UserId);
+            modelBuilder.Entity<HolidayConfig>()
+                .HasOne(bc => bc.User)
+                .WithMany(b => b.HolidayConfigs)
+                .HasForeignKey(bc => bc.UserId);
 
             modelBuilder.Entity<Holiday>().ToTable("Holidays").HasIndex(h => h.Year);
             modelBuilder.Entity<User>().ToTable("Users");
@@ -56,7 +54,12 @@ namespace Infrastructure.Data
                 .Metadata.SetValueComparer(comparer);
 
             modelBuilder.Entity<YearConfig>().HasIndex(p => p.Year);
+            modelBuilder.Entity<YearConfig>().HasIndex(p => p.Date);
             modelBuilder.Entity<Event>().HasIndex(p => p.StartDate);
+            modelBuilder.Entity<Holiday>().HasIndex(p => p.UserId);
+            modelBuilder.Entity<Holiday>().HasIndex(p => p.Start);
+            modelBuilder.Entity<HolidayConfig>().HasIndex(p => p.UserId);
+            modelBuilder.Entity<User>().HasIndex(p => p.Email);
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using Core.Entities;
 using Core.Enums;
+using Core.Exceptions;
 using Core.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -26,10 +27,11 @@ namespace Infrastructure.Services
 
         public async Task CreateHoliday(Holiday holiday, int currentUserId)
         {
-            var requestedHolidays = (await _holidayRepository.FindAllAsync(h => h.UserId == currentUserId && h.Status == StatusEnum.Requested));
+            var requestedHolidays = (await _holidayRepository.FindAllAsync(h => h.UserId == currentUserId 
+                                                                             && h.Status == StatusEnum.Requested));
             if (requestedHolidays.Any())
             {
-                throw new Exception("van kiírt szabadság, amit még nem bíráltak el");
+                throw new BusinessLogicException("van kiírt szabadság, amit még nem bíráltak el");
             }
 
             var yearconfigs = await _yearConfigService.GetYearConfigs(holiday.Start, holiday.End);
@@ -43,7 +45,7 @@ namespace Infrastructure.Services
             }
             else
             {
-                throw new Exception("nincs elég elérhető szabadnap");
+                throw new BusinessLogicException("nincs elég elérhető szabadnap");
             }
         }
 
@@ -53,7 +55,7 @@ namespace Infrastructure.Services
             if (holiday == null ) throw new ArgumentNullException(nameof(holiday));
             if (holiday.Start.Date <= DateTime.Now.Date)
             {
-                throw new Exception("már elkezdett szabadság nem törölhető");
+                throw new BusinessLogicException("már elkezdett szabadság nem törölhető");
             }
             holiday.Status = StatusEnum.Deleted;
             await _holidayRepository.UpdateAsync(holiday, currentUserId);
@@ -85,11 +87,14 @@ namespace Infrastructure.Services
         public async Task UpdateStatusHoliday(int holidayId, StatusEnum status, int currentUserId)
         {
             var holiday = await _holidayRepository.FindByIdAsync(holidayId);
-            if (holiday != null)
+            if (holiday == null) throw new ArgumentNullException(nameof(holiday));
+            if (holiday.Status != StatusEnum.Requested)
             {
-                holiday.Status = status;
-                await _holidayRepository.UpdateAsync(holiday, currentUserId);
+                throw new BusinessLogicException("csak igényelt állapotú szabadságigény módosítható");
             }
+
+            holiday.Status = status;
+            await _holidayRepository.UpdateAsync(holiday, currentUserId);
         }
     }
 }

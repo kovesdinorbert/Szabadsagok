@@ -13,5 +13,6 @@ namespace Core.Entities
         public bool Deleted { get; set; }
         public ICollection<RoleEnum> Roles { get; set; } = new List<RoleEnum>();
         public ICollection<Holiday> Holidays { get; set; } = new List<Holiday>();
+        public ICollection<HolidayConfig> HolidayConfigs { get; set; } = new List<HolidayConfig>();
     }
 }

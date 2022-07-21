@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Core.Enums;
+using System;
+using System.Collections.Generic;
 
 namespace Szabadsagok.Dto
 {
@@ -7,5 +9,7 @@ namespace Szabadsagok.Dto
         public string Id { get; set; }
         public string Name { get; set; }
         public string Email { get; set; }
+        public List<RoleEnum> Roles { get; set; } = new List<RoleEnum>();
+        public List<HolidayForYearDto> HolidayForYears { get; set; } = new List<HolidayForYearDto>();
     }
 }

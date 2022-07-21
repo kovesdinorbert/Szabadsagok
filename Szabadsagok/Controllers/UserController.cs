@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Core.Entities;
 using Core.Enums;
+using Core.Exceptions;
 using Core.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -51,11 +52,11 @@ namespace Szabadsagok.Controllers
             return Unauthorized();
         }
 
-        [HttpGet]
-        public async Task<IActionResult> GetUser()
-        {
-            return View();
-        }
+        //[HttpGet]
+        //public async Task<IActionResult> GetUser()
+        //{
+        //    return Ok();
+        //}
 
         [HttpGet("getallusers")]
         [ProducesResponseType(typeof(IEnumerable<UserListDto>), StatusCodes.Status200OK)]
@@ -63,8 +64,6 @@ namespace Szabadsagok.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetAllUsers()
         {
-            GetUserIdFromToken();
-
             List<UserListDto> ret;
             try
             {
@@ -78,26 +77,42 @@ namespace Szabadsagok.Controllers
             return Ok(ret);
         }
 
-        [HttpPost("setholiday/{userId}")]
-        public async Task<IActionResult> SetHoliday(int userId)
+        [HttpPost("setholiday/{userId}/{year}/{count}")]
+        [ProducesResponseType(typeof(UserDataDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> SetHoliday(int userId,int year, int count)
         {
-            return View();
+            var currentUserId = GetUserIdFromToken();
+
+            try
+            {
+                await _userService.SetHolidayConfig(year, count, userId, currentUserId);
+            }
+            catch (Exception e)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError);
+            }
+
+            return Ok();
         }
 
         [HttpPost("updateuser")]
         [ProducesResponseType(typeof(UserDataDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> UpdateUser(UserDataDto userData)
         {
             var userId = GetUserIdFromToken();
 
-            UserDataDto ret;
-
             try
             {
-                var user = _mapper.Map<User>(userData);
-                await _userService.UpdateUser(user, userId);
+                await _userService.UpdateUser(_mapper.Map<User>(userData), userId);
+            }
+            catch (BusinessLogicException e)
+            {
+                return StatusCode(StatusCodes.Status403Forbidden, e.Message);
             }
             catch (Exception e)
             {
@@ -110,6 +125,7 @@ namespace Szabadsagok.Controllers
         [HttpPut("createuser")]
         [ProducesResponseType(typeof(UserDataDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> CreateUser(UserDataDto userData)
         {
@@ -119,11 +135,15 @@ namespace Szabadsagok.Controllers
 
             try
             {
-                ret =_mapper.Map<UserDataDto>(await _userService.CreateUser(userData.Name, userData.Email, userId));
+                ret =_mapper.Map<UserDataDto>(await _userService.CreateUser(userData.Name, userData.Email, userData.Roles, userId));
                 if (ret == null || string.IsNullOrEmpty(ret.Id))
                 {
                     return StatusCode(StatusCodes.Status500InternalServerError);
                 }
+            }
+            catch (BusinessLogicException e)
+            {
+                return StatusCode(StatusCodes.Status403Forbidden, e.Message);
             }
             catch (Exception e)
             {

@@ -136,6 +136,10 @@ class CalendarBase extends React.Component<any> {
     fetch(url, requestOptions)
       .then(async response => {
         if (!response.ok) {
+          if (response.status === 401) {
+            this.token = '';
+            this.props.saveToken('');
+          }
           this.props.showToastrMessage({severity: 'error', summary:'Sikertelen művelet', detail: 'Sikertelen művelet'});
         } else {
           const data: YearConfigModel[] = await response.json();
