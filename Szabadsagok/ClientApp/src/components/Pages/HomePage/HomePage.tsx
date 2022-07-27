@@ -6,7 +6,7 @@ import IncomingHolidays from '../../Component/IncomingHolidays/IncomingHolidays'
 import { Calendar } from 'primereact/calendar';
 
 import './design.css';
-import EventPage from '../../Component/EventPage/EventPage';
+import EventPage from '../EventPage/EventPage';
 
 export interface IState {
 }
