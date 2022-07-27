@@ -1,54 +1,55 @@
-﻿using AutoMapper;
-using Core.Entities;
+﻿using Core.Entities;
 using Core.Enums;
 using Core.Interfaces;
+using Mapster;
+using System;
 using Szabadsagok.Dto;
 
 namespace Szabadsagok.App_Conf
 {
-    public class MappingConfig : Profile
+    public class MappingConfig : IRegister
     {
-        public MappingConfig(IDataProtectionMapProvider dataProtectionMapProvider)
+        public void Register(TypeAdapterConfig config)
         {
-            CreateMap<IHasIdDto, IHasId>()
-                .ForMember(dst => dst.Id, opt => opt.MapFrom(src => dataProtectionMapProvider.Unprotect(src.Id.ToString())));
-            CreateMap<IHasId, IHasIdDto>()
-                .ForMember(dst => dst.Id, opt => opt.MapFrom(src => dataProtectionMapProvider.Protect(src.Id.ToString())));
+            config.NewConfig<IHasIdDto, IHasId>()
+                .Map(dst => dst.Id, opt => string.IsNullOrWhiteSpace(opt.Id) ? 0 : Convert.ToInt32(MapContext.Current.GetService<IDataProtectionMapProvider>().Unprotect(opt.Id.ToString())));
+            config.NewConfig<IHasId, IHasIdDto>()
+                .Map(dst => dst.Id, opt => opt.Id == 0 ? "" : MapContext.Current.GetService<IDataProtectionMapProvider>().Protect(opt.Id.ToString()));
 
+            config.NewConfig<HolidayRequestDto, Holiday>()
+                .Map(dst => dst.Status, opt => StatusEnum.Requested)
+                .Map(dst => dst.Year, opt => opt.Start.Year);
 
-            CreateMap<HolidayRequestDto, Holiday>()
-                .ForMember(dst => dst.Status, opt => opt.MapFrom(src => StatusEnum.Requested))
-                .ForMember(dst => dst.Year, opt => opt.MapFrom(src => src.Start.Year));
+            config.NewConfig<Holiday, IncomingHolidayDto>()
+                .Map(dst => dst.UserName, opt => opt.User.Name);
 
-            CreateMap<Holiday, IncomingHolidayDto>()
-                .ForMember(dst => dst.UserName, opt => opt.MapFrom(src => src.User.Name));
+            config.NewConfig<User, UserDataDto>()
+                .Inherits<IHasId, IHasIdDto>();
 
-            CreateMap<User, UserDataDto>()
-                .IncludeBase<IHasId, IHasIdDto>();
+            config.NewConfig<User, UserListDto>()
+                .Inherits<IHasId, IHasIdDto>()
+                .Map(dst => dst.HolidayForYears, opt => opt.HolidayConfigs);
 
-            CreateMap<User, UserListDto>()
-                .IncludeBase<IHasId, IHasIdDto>();
+            config.NewConfig<UserDataDto, User>()
+                .Inherits<IHasIdDto, IHasId>();
 
-            CreateMap<UserDataDto, User>()
-                .IncludeBase<IHasIdDto, IHasId>();
+            config.NewConfig<YearConfigDto, YearConfig>()
+                .Inherits<IHasIdDto, IHasId>();
 
-            CreateMap<YearConfigDto, YearConfig>()
-                .IncludeBase<IHasIdDto, IHasId>();
+            config.NewConfig<YearConfig, YearConfigDto>()
+                .Inherits<IHasId, IHasIdDto>();
 
-            CreateMap<YearConfig, YearConfigDto>()
-                .IncludeBase<IHasId, IHasIdDto>();
+            config.NewConfig<HolidayConfig, HolidayForYearDto>()
+                .Inherits<IHasId, IHasIdDto>();
 
-            CreateMap<HolidayConfig, HolidayForYearDto>()
-                .IncludeBase<IHasId, IHasIdDto>();
+            config.NewConfig<HolidayForYearDto, HolidayConfig>()
+                .Inherits<IHasIdDto, IHasId>();
 
-            CreateMap<HolidayForYearDto, HolidayConfig>()
-                .IncludeBase<IHasIdDto, IHasId>();
+            config.NewConfig<Event, EventDto>()
+                .Inherits<IHasId, IHasIdDto>();
 
-            CreateMap<Event, EventDto>()
-                .IncludeBase<IHasId, IHasIdDto>();
-
-            CreateMap<EventDto, Event>()
-                .IncludeBase<IHasIdDto, IHasId>();
+            config.NewConfig<EventDto, Event>()
+                .Inherits<IHasIdDto, IHasId>();
         }
     }
 }

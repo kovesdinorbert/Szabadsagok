@@ -43,7 +43,6 @@ class EditUserPage extends React.Component<any> {
     this.setRoles = this.setRoles.bind(this);
     this.setHolidays = this.setHolidays.bind(this);
     this.sendRequest = this.sendRequest.bind(this);
-    this.auth = this.auth.bind(this);
 
     if (props.selectedUser && props.selectedUser[0]) {
       this.user = {...props.selectedUser[0]};
@@ -56,7 +55,6 @@ class EditUserPage extends React.Component<any> {
   componentDidMount() {
     this.setState({user: {roles : this.user.roles}});
     if (!this.props.token) {
-     this.auth();
     } else {
       this.token = this.props.token;
       this.sendRequest();
@@ -100,32 +98,6 @@ class EditUserPage extends React.Component<any> {
     this.sendRequest();
   }
 
-  private auth() {
-    let url = `${process.env.REACT_APP_API_PATH}/user/authenticate`;
-
-    const requestOptions = {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-    };
-
-    fetch(url, requestOptions)
-      .then(async response => {
-        if (!response.ok) {
-          this.props.showToastrMessage({severity: 'error', summary:'Sikertelen művelet', detail: 'Sikertelen művelet'});
-        } else {
-          response.json().then((resp: any) => {
-            this.token = resp.token;
-            this.props.showToastrMessage({severity: 'succcess', summary:'Sikeres művelet', detail: 'Sikeres művelet'});
-          });
-        }
-        this.setState({ body: "", subject: "", showMessage: true });
-      })
-      .catch(error => {
-        this.props.showToastrMessage({severity: 'error', summary:'Sikertelen művelet', detail: 'Sikertelen művelet'});
-      });
-  }
 
   private sendRequest() {
     if (!this.state.formIsValid) {

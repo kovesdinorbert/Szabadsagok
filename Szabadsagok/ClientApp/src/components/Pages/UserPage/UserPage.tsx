@@ -39,7 +39,6 @@ class UserPage extends React.PureComponent<any> {
     this.setName = this.setName.bind(this);
     this.setHolidays = this.setHolidays.bind(this);
     this.sendRequest = this.sendRequest.bind(this);
-    this.auth = this.auth.bind(this);
     this.newUserModalClick = this.newUserModalClick.bind(this);
     this.editButtonTemplate = this.editButtonTemplate.bind(this);
     this.editUserClick = this.editUserClick.bind(this);
@@ -52,7 +51,6 @@ class UserPage extends React.PureComponent<any> {
 
   componentDidMount() {
     if (!this.props.token) {
-     this.auth();
     } else {
       this.token = this.props.token;
       this.sendRequest();
@@ -95,34 +93,6 @@ class UserPage extends React.PureComponent<any> {
 
   private handleEmailChange(email: string) {
     this.setState({ email: email });
-  }
-
-  private auth() {
-    let url = `${process.env.REACT_APP_API_PATH}/user/authenticate`;
-
-    const requestOptions = {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    };
-
-    fetch(url, requestOptions)
-      .then(async response => {
-        if (!response.ok) {
-          this.props.showToastrMessage({severity: 'error', summary:'Sikertelen művelet', detail: 'Sikertelen művelet'});
-        } else {
-          response.json().then((resp: any) => {
-            this.token = resp.token;
-            this.props.showToastrMessage({severity: 'success', summary:'Sikeres művelet', detail: 'Sikeres művelet'});
-            this.sendRequest();
-          });
-        }
-        this.setState({ body: "", subject: "", name: "", email: "", showMessage: true });
-      })
-      .catch(error => {
-        this.props.showToastrMessage({severity: 'error', summary:'Sikertelen művelet', detail: 'Sikertelen művelet'});
-      });
   }
 
   private sendRequest() {

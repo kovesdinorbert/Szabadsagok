@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+﻿using MapsterMapper;
 using Core.Entities;
 using Core.Enums;
 using Core.Exceptions;
@@ -38,11 +38,12 @@ namespace Szabadsagok.Controllers
         [HttpPost("authenticate")]
         [ProducesResponseType(typeof(LoginResultDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        public async Task<IActionResult> Authenticate(/*[FromBody] LoginDto login*/)
+        public async Task<IActionResult> Authenticate([FromBody]LoginResultDto login)
         {
             //var user = await _userService.Login(login.Email, login.Password);
-            var user = await _userService.GetUser(int.Parse("1"));
-            await _userService.UpdateUser(user, 1);
+            var user = await _userService.GetUserByEmail(login.Email);
+            //var user = await _userService.GetUser(int.Parse("1"));
+            //await _userService.UpdateUser(user, 1);
             if (user != null)
             {
                 var token = await _userService.GenerateToken(user);

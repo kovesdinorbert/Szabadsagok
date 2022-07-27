@@ -38,12 +38,10 @@ class HolidayPage extends React.PureComponent<any> {
     this.setReason = this.setReason.bind(this);
     this.sendRequest = this.sendRequest.bind(this);
     this.getAvailableHolidays = this.getAvailableHolidays.bind(this);
-    this.auth = this.auth.bind(this);
   }
 
   componentDidMount() {
     if (!this.props.token) {
-     this.auth();
     } else {
       this.token = this.props.token;
       this.sendRequest();
@@ -77,33 +75,6 @@ class HolidayPage extends React.PureComponent<any> {
     this.setState({ email: email });
   }
 
-  private auth() {
-    let url = `${process.env.REACT_APP_API_PATH}/user/authenticate`;
-
-    const requestOptions = {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    };
-
-    fetch(url, requestOptions)
-      .then(async response => {
-        if (!response.ok) {
-          this.props.showToastrMessage({severity: 'error', summary:'Sikertelen művelet', detail: 'Sikertelen művelet'});
-        } else {
-          response.json().then((resp: any) => {
-            this.token = resp.token;
-            this.props.showToastrMessage({severity: 'success', summary:'Sikeres művelet', detail: 'Sikeres művelet'});
-          });
-        }
-        this.setState({ body: "", subject: "", name: "", email: "", showMessage: true });
-      })
-      .catch(error => {
-        this.props.showToastrMessage({severity: 'error', summary:'Sikertelen művelet', detail: 'Sikertelen művelet'});
-      });
-  }
-  
   private getAvailableHolidays() {
     const decoded : any = jwt_decode(this.token);
     const userId = decoded['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'];

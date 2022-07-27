@@ -31,7 +31,6 @@ class ConfigYearPage extends React.Component<any> {
   
   constructor(props: any) {
     super(props);
-    this.auth = this.auth.bind(this);
     this.sendRequest = this.sendRequest.bind(this);
     this.dayRenderer = this.dayRenderer.bind(this);
     this.dateClick = this.dateClick.bind(this);
@@ -49,38 +48,10 @@ class ConfigYearPage extends React.Component<any> {
 
   componentDidMount() {
     if (!this.props.token) {
-     this.auth();
     } else {
       this.token = this.props.token;
       this.sendRequest();
     }
-  }
-
-
-  private auth() {
-    let url = `${process.env.REACT_APP_API_PATH}/user/authenticate`;
-    this.setState({ blocking: true });
-
-    const requestOptions = {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    };
-
-    fetch(url, requestOptions)
-      .then(async response => {
-        if (!response.ok) {
-        } else {
-          response.json().then((resp: any) => {
-            this.token = resp.token;
-            this.props.saveToken(this.token);
-          });
-        }
-        this.setState({ body: "", blocking: false, subject: "", name: "", email: "", showMessage: true });
-      })
-      .catch(error => {
-      });
   }
 
   private sendRequest() {

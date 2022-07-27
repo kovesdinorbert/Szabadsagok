@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+﻿using MapsterMapper;
 using Core.Entities;
 using Core.Enums;
 using Core.Exceptions;

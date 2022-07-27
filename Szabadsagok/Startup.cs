@@ -1,23 +1,22 @@
-using AutoMapper;
 using Core.Configuration;
 using Core.Interfaces;
 using Infrastructure.Data;
 using Infrastructure.Repository;
 using Infrastructure.Services;
+using Mapster;
+using MapsterMapper;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
-using System.Security.Cryptography;
+using System.Reflection;
 using System.Text;
 using Szabadsagok.App_Conf;
 
@@ -65,10 +64,16 @@ namespace Szabadsagok
             services.AddScoped(typeof(IEmailService), typeof(EmailService));
             services.AddScoped(typeof(IEventService), typeof(EventService));
             services.AddSingleton(typeof(IDataProtectionMapProvider), typeof(DataProtectionMapProvider));
-            services.AddSingleton(provider => new MapperConfiguration(cfg =>
-            {
-                cfg.AddProfile(new MappingConfig(provider.GetService<IDataProtectionMapProvider>()));
-            }).CreateMapper());
+            //services.AddSingleton(provider => new MapperConfiguration(cfg =>
+            //{
+            //    cfg.AddProfile(new MappingConfig(provider.GetService<IDataProtectionMapProvider>()));
+            //}).CreateMapper());
+            services.AddMappings();
+            //var mapconfig = TypeAdapterConfig.GlobalSettings;
+            //mapconfig.Scan(Assembly.GetExecutingAssembly());
+
+            //services.AddSingleton(mapconfig);
+            //services.AddScoped<IMapper, ServiceMapper>();
             //services.AddAutoMapperBuilder
             //services.AddAutoMapperBuilder(builder =>
             //{

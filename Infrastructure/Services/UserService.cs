@@ -66,7 +66,7 @@ namespace Infrastructure.Services
 
         public async Task<List<User>> GetUsers()
         {
-            var users = await _userRepository.FindAllAsync(u => !u.Deleted, u => u.Include(h => h.Holidays));
+            var users = await _userRepository.FindAllAsync(u => !u.Deleted, u => u.Include(h => h.Holidays).Include(h => h.HolidayConfigs));
 
             return users;
         }
@@ -135,12 +135,23 @@ namespace Infrastructure.Services
         {
             foreach (var hcs in holidayConfigs.Where(hc => hc.Year > 0 && hc.MaxHoliday > 0))
             {
-                await _holidayConfigRepository.CreateAsync(new HolidayConfig()
+                var existingConfigQ = await _holidayConfigRepository.FindAllAsync(hc => hc.UserId == hcs.UserId
+                                                                                       && hc.Year == hcs.Year);
+                var existingConfig = existingConfigQ.FirstOrDefault();
+                if (existingConfig != null)
                 {
-                    MaxHoliday = hcs.MaxHoliday,
-                    Year = hcs.Year,
-                    UserId = userId,
-                }, currentUserId);
+                    await _holidayConfigRepository.CreateAsync(new HolidayConfig()
+                    {
+                        MaxHoliday = hcs.MaxHoliday,
+                        Year = hcs.Year,
+                        UserId = userId,
+                    }, currentUserId);
+                } 
+                else
+                {
+                    existingConfig.MaxHoliday = hcs.MaxHoliday;
+                    await _holidayConfigRepository.UpdateAsync(existingConfig, currentUserId);
+                }
             }
         }
 

@@ -11,6 +11,7 @@ import HolidayPage from './components/Pages/HolidayPage/HolidayPage';
 import UserPage from './components/Pages/UserPage/UserPage';
 import ConfigYearPage from './components/Pages/ConfigYearPage/ConfigYearPage';
 import HomePage from './components/Pages/HomePage/HomePage';
+import TempLoginPage from './components/Pages/TempLoginPage/templogin';
 
 export default () => (
     <Layout>
@@ -18,5 +19,6 @@ export default () => (
         <Route exact path='/request' component={HolidayPage} />
         <Route path='/users' component={UserPage} />
         <Route path='/configyear' component={ConfigYearPage} />
+        <Route path='/login' component={TempLoginPage} />
     </Layout>
 );

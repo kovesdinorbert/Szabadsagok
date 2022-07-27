@@ -20,47 +20,15 @@ class HomePage extends React.Component<any> {
 
   constructor(props: any) {
     super(props);
-    this.auth = this.auth.bind(this);
-    this.setDate7 = this.setDate7.bind(this);
   }
 
   componentDidMount() {
     if (!this.props.token) {
-      this.auth();
     } else {
       this.token = this.props.token;
     }
   }
 
-  private auth() {
-    let url = `${process.env.REACT_APP_API_PATH}/user/authenticate`;
-    this.setState({ blocking: true });
-
-    const requestOptions = {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    };
-
-    fetch(url, requestOptions)
-      .then(async response => {
-        if (!response.ok) {
-        } else {
-          response.json().then((resp: any) => {
-            this.token = resp.token;
-            this.props.saveToken(this.token);
-          });
-        }
-        this.setState({ body: "", blocking: false, subject: "", name: "", email: "", showMessage: true });
-      })
-      .catch(error => {
-      });
-  }
-
-  setDate7(value: any) {
-    debugger;
-  }
 
   public render() {
     return (

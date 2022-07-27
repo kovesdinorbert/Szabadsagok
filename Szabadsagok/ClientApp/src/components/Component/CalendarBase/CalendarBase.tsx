@@ -31,7 +31,6 @@ class CalendarBase extends React.Component<any> {
   constructor(props: any) {
     super(props);
     this.calendarRef = React.createRef();
-    this.auth = this.auth.bind(this);
     this.sendRequest = this.sendRequest.bind(this);
     this.dateSelected = this.dateSelected.bind(this);
     this.dayRenderer = this.dayRenderer.bind(this);
@@ -48,39 +47,13 @@ class CalendarBase extends React.Component<any> {
     //   this.props.ref(this);
     // }
     if (!this.props.token) {
-     this.auth();
+    //  this.auth();
     } else {
       this.token = this.props.token;
       this.sendRequest();
     }
   }
 
-
-  private auth() {
-    let url = `${process.env.REACT_APP_API_PATH}/user/authenticate`;
-    this.setState({ blocking: true });
-
-    const requestOptions = {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    };
-
-    fetch(url, requestOptions)
-      .then(async response => {
-        if (!response.ok) {
-        } else {
-          response.json().then((resp: any) => {
-            this.token = resp.token;
-            this.props.saveToken(this.token);
-          });
-        }
-        this.setState({ body: "", blocking: false, subject: "", name: "", email: "", showMessage: true });
-      })
-      .catch(error => {
-      });
-  }
 
   private getEvents() {
     if (this.calendarRef == undefined || this.calendarRef == null) return;
