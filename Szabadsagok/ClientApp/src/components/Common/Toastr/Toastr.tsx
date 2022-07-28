@@ -1,33 +1,25 @@
-import React, { RefObject } from 'react';
+import React, { RefObject, useEffect, useRef } from 'react';
 import { Toast, ToastMessage } from 'primereact/toast';
     
-class Toastr extends React.PureComponent<any> {
-  toast: RefObject<Toast>;
+function Toastr(props: any) {
+  const toast = useRef<Toast>(null);
 
-  constructor(props: any) {
-    super(props);
+  useEffect(() => {
+    showToast();
+  });
 
-    this.toast = React.createRef();
-  }
-
-  componentDidUpdate() {
-    this.showToast();
-  }
-
-  private showToast() {
-      if (this.props.toastr && this.toast.current !== null) {
-        const p : ToastMessage = this.props.toastr;
-        this.toast.current.show({ severity: p.severity, summary: p.summary, detail: p.detail, life: 3000 });
+  const showToast = () => {
+      if (props.toastr && toast.current) {
+        const p : ToastMessage = props.toastr;
+        toast.current.show({ severity: p.severity, summary: p.summary, detail: p.detail, life: 3000 });
       }
   }
 
-  public render() {
-    return (
+  return (
       <React.Fragment>
-        <Toast ref={this.toast} />
+        <Toast ref={toast} />
       </React.Fragment>
     );
-  }
 };
 
 export default Toastr
