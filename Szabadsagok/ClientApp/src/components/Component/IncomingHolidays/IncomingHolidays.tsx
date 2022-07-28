@@ -1,4 +1,4 @@
-import React, { RefObject } from 'react';
+import React, { useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 import moment from 'moment';
 import { faEnvelopeSquare } from '@fortawesome/free-solid-svg-icons';
@@ -8,111 +8,58 @@ import { DataTable, DataTableRowClassNameOptions } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { HolidayDistanceEnum } from './HolidayDistanceEnum';
 import * as UserStore from '../../../store/AppContextStore';
-import { RouteComponentProps } from 'react-router';
 import './design.css';
 
 
-export interface IState {
-  holidays?: IncomingHolidayModel[];
-}
+function IncomingHolidays(props: any) {
+  const [holidays, setHolidays] = useState<any[] | null>(null);
 
-// type UserProps =
-//     UserStore.UserState &
-//     typeof UserStore.actionCreators &
-//     RouteComponentProps<{}>;
-class IncomingHolidays extends React.Component<any>/*<CounterProps>*/ {
-
-  public state: IState = {
-    holidays: undefined
-  };
-  token: string = "";
-
-  constructor(props: any) {
-    super(props);
-    this.sendRequest = this.sendRequest.bind(this);
-    this.getDistanceClass = this.getDistanceClass.bind(this);
-    this.auth = this.auth.bind(this);
-  }
-
-  componentDidMount() {
-    if (!this.props.token) {
-     this.auth();
+  useEffect(() => {
+    if (!props.token) {
     } else {
-      this.token = this.props.token;
-      this.sendRequest();
+      getIncomingHolidays();
     }
-  }
+  }, []);
 
-  private auth() {
-    let url = `${process.env.REACT_APP_API_PATH}/user/authenticate`;
-
-    const requestOptions = {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    };
-
-    fetch(url, requestOptions)
-      .then(async response => {
-        if (!response.ok) {
-          this.props.showToastrMessage({severity: 'error', summary:'Sikertelen művelet', detail: 'Sikertelen művelet'});
-        } else {
-          response.json().then((resp: any) => {
-            this.token = resp.token;
-            this.props.saveToken(this.token);
-            this.sendRequest();
-            this.props.showToastrMessage({severity: 'success', summary:'Sikeres művelet', detail: 'Sikeres művelet'});
-          });
-        }
-        this.setState({ body: "", subject: "", name: "", email: "", showMessage: true });
-      })
-      .catch(error => {
-        this.props.showToastrMessage({severity: 'error', summary:'Sikertelen művelet', detail: 'Sikertelen művelet'});
-      });
-  }
-
-  private sendRequest() {
+  const getIncomingHolidays = () => {
     let url = `${process.env.REACT_APP_API_PATH}/holiday`;
-    this.props.setLoadingState(true);
+    props.setLoadingState(true);
 
     const requestOptions = {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + this.token
+        'Authorization': 'Bearer ' + props.token
       }
     };
 
     fetch(url, requestOptions)
       .then(async response => {
         if (!response.ok) {
-          this.props.showToastrMessage({severity: 'error', summary:'Sikertelen művelet', detail: 'Sikertelen művelet'});
+          props.showToastrMessage({severity: 'error', summary:'Sikertelen művelet', detail: 'Sikertelen művelet'});
         } else {
           const data: IncomingHolidayModel[] = await response.json();
-          this.setState({
-            holidays: data.map((d: IncomingHolidayModel) => {
-              return Object.assign({}, d, {
-                distance: moment().add(7, 'days').isAfter(moment(d.start))
-                  ? HolidayDistanceEnum.Near
-                  : moment().add(1, 'months').isAfter(moment(d.start))
-                    ? HolidayDistanceEnum.Future
-                    : HolidayDistanceEnum.DistantFuture
-              });
-            })
+          var mappedData = data.map((d: IncomingHolidayModel) => {
+            return Object.assign({}, d, {
+              distance: moment().add(7, 'days').isAfter(moment(d.start))
+                ? HolidayDistanceEnum.Near
+                : moment().add(1, 'months').isAfter(moment(d.start))
+                  ? HolidayDistanceEnum.Future
+                  : HolidayDistanceEnum.DistantFuture
+            });
           });
-          this.props.showToastrMessage({severity: 'success', summary:'Sikeres művelet', detail: 'Sikeres művelet'});
+          setHolidays(mappedData);
+          props.showToastrMessage({severity: 'success', summary:'Sikeres művelet', detail: 'Sikeres művelet'});
         }
-        this.setState({ body: "", subject: "", name: "", email: "", showMessage: true });
-        this.props.setLoadingState(false);
+        props.setLoadingState(false);
       })
       .catch(error => {
-        this.props.showToastrMessage({severity: 'error', summary:'Sikertelen művelet', detail: 'Sikertelen művelet'});
-        this.props.setLoadingState(false);
+        props.showToastrMessage({severity: 'error', summary:'Sikertelen művelet', detail: 'Sikertelen művelet'});
+        props.setLoadingState(false);
       });
   }
 
-  getDistanceClass(data: any, options: DataTableRowClassNameOptions): object | string {
+  const getDistanceClass = (data: any, options: DataTableRowClassNameOptions): object | string => {
     if (data.distance === HolidayDistanceEnum.Near) {
       return "near-distance";
     } else if (data.distance === HolidayDistanceEnum.Future) {
@@ -121,8 +68,7 @@ class IncomingHolidays extends React.Component<any>/*<CounterProps>*/ {
     return "far-future-distance";
   }
 
-  public render() {
-    let confReason: InputTextAreaModel = {
+    const confReason: InputTextAreaModel = {
       label: 'Email cím',
       id: "email_id",
       required: true,
@@ -135,8 +81,8 @@ class IncomingHolidays extends React.Component<any>/*<CounterProps>*/ {
     return (
       <React.Fragment>
         <h1>Közelgő szabadságok</h1>
-        {this.state.holidays
-          ? <DataTable value={this.state.holidays} rowClassName={this.getDistanceClass}>
+        {holidays !== null
+          ? <DataTable value={holidays} rowClassName={getDistanceClass}>
               <Column field="userName" header="Felhasználó"></Column>
               <Column field="start" header="Kezdete"></Column>
               <Column field="end" header="Vége"></Column>
@@ -144,7 +90,6 @@ class IncomingHolidays extends React.Component<any>/*<CounterProps>*/ {
           : <></>}
       </React.Fragment>
     );
-  }
 };
 
 function mapStateToProps(state :any) {

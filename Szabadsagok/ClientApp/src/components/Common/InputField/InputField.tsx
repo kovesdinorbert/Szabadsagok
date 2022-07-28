@@ -93,7 +93,6 @@ export class InputField extends React.Component<any, IState>{
           onKeyUp={this.keyPress}
           id={conf.id ? conf.id : "input_field"}
           type={conf.type}
-          // endAdornment={conf.icon ? <FontAwesomeIcon className="login-brand-icon" icon={conf.icon.icon} /> : <></>}
           {...conf.otherProps}
         />
         {this.state.touched && errors.required ? <div className="validation-error-message">A mező kitöltése kötelező</div> : <></>}

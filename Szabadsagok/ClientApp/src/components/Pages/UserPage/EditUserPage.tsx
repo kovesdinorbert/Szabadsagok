@@ -104,7 +104,7 @@ class EditUserPage extends React.Component<any> {
       return;
     }
     
-this.props.setLoadingState(true);
+  this.props.setLoadingState(true);
 
     let url = ``;
 

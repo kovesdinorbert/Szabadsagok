@@ -55,7 +55,8 @@ namespace Infrastructure.Services
 
         public async Task SetYearData(YearConfig yearConfig, int currentUserId)
         {
-            var yc = (await _yearConfigRepository.FindAllAsync(yc => yc.Year == yearConfig.Year && yc.Date == yearConfig.Date)).FirstOrDefault();
+            var yc = (await _yearConfigRepository.FindAllAsync(yc => yc.Year == yearConfig.Year 
+                                                                     && yc.Date.Date == yearConfig.Date.Date)).FirstOrDefault();
 
             if (yc != null)
             {

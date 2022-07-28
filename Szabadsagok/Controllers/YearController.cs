@@ -59,21 +59,17 @@ namespace Szabadsagok.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> SetYearData(YearConfigDto yearConfig)
         {
-            var userId = GetUserIdFromToken();
-
-            YearConfigDto ret;
-
             try
             {
                 var dayConfig = _mapper.Map<YearConfig>(yearConfig);
-                await _yearConfigService.SetYearData(dayConfig, userId);
+                await _yearConfigService.SetYearData(dayConfig, GetUserIdFromToken());
+
+                return Ok(dayConfig);
             }
             catch (Exception e)
             {
                 return StatusCode(StatusCodes.Status500InternalServerError);
             }
-
-            return Ok();
         }
     }
 }

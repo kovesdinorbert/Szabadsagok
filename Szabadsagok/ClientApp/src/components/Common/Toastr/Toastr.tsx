@@ -1,4 +1,4 @@
-import React, { RefObject, useEffect, useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Toast, ToastMessage } from 'primereact/toast';
     
 function Toastr(props: any) {
