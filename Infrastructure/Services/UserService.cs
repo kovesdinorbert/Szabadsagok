@@ -113,14 +113,15 @@ namespace Infrastructure.Services
 
         public async Task<ErrorOr<bool>> UpdateUser(User user, int currentUserId)
         {
-            return UserErrors.NameAndEmailRequired;
+            if (string.IsNullOrWhiteSpace(user.Email) || string.IsNullOrWhiteSpace(user.Name))
+                return UserErrors.NameAndEmailRequired;
 
             if (user.Id <= 0)
-                throw new ArgumentNullException(nameof(user.Id));
+                return UserErrors.UserNotFound;
 
             var dbuser = await _userRepository.FindByIdAsync(user.Id);
             if (dbuser == null)
-                throw new ArgumentNullException(nameof(user));
+                return UserErrors.UserNotFound;
 
             dbuser.Name = user.Name;
             dbuser.Email = user.Email;

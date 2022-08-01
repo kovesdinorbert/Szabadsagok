@@ -1,8 +1,6 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { connect } from 'react-redux';
-import FullCalendar, { DateSelectArg } from '@fullcalendar/react';
-import dayGridPlugin from '@fullcalendar/daygrid';
-import interactionPlugin from '@fullcalendar/interaction';
+import { DateSelectArg } from '@fullcalendar/react';
 import moment from 'moment';
 import { Button } from 'primereact/button';
 import { faEnvelopeSquare } from '@fortawesome/free-solid-svg-icons';
@@ -16,113 +14,97 @@ import './design.css';
 import CalendarBase from '../../Component/CalendarBase/CalendarBase';
 
     
-class HolidayPage extends React.PureComponent<any> {
+function HolidayPage(props: any) {
 
-  public state: any = {
-    start: Date,
-    end: Date,
-    formIsValid: false,
-    availableHoliday: 0
-  };
+  const [formIsValid, setFormIsValid] = useState<boolean>(false);
+  const [start, setStart] = useState<Date | null>(null);
+  const [end, setEnd] = useState<Date | null>(null);
+  const [reason, setReason] = useState<string>('');
+  const [availableHoliday, setAvailableHoliday] = useState<number>(0);
+  const [isValidDict, setIsValidDict] = useState<any>({start: false, end: false, reason: false});
+  const [rendered, setRendered] = useState<boolean>(false);
 
-  token: string = "";
-  reason: string = "";
-  isValidDict: {[key: string]: boolean} = {start: false, end: false, reason: false};
-
-  constructor(props: any) {
-    super(props);
-    this.handleEmailChange = this.handleEmailChange.bind(this);
-    this.reasonEnterPressed = this.reasonEnterPressed.bind(this);
-    this.dateSelected = this.dateSelected.bind(this);
-    this.setFormIsValid = this.setFormIsValid.bind(this);
-    this.setReason = this.setReason.bind(this);
-    this.sendRequest = this.sendRequest.bind(this);
-    this.getAvailableHolidays = this.getAvailableHolidays.bind(this);
-  }
-
-  componentDidMount() {
-    if (!this.props.token) {
+  useEffect(() => {
+    if (!props.token) {
+    } else if (!rendered){
+      setRendered(true);
+      sendRequest();
+      getAvailableHolidays();
     } else {
-      this.token = this.props.token;
-      this.sendRequest();
+      setFormIsValidFv();
     }
-    this.getAvailableHolidays();
+  }, [rendered, start, end, reason]);
+  
+
+  const dateSelected = (e: DateSelectArg): void => {
+    setStart(moment(e.start).utc().add(2,'h').toDate());
+    setEnd(moment(e.end).utc().add(-2,'h').toDate());
+    
+    setIsValidDict({start : moment(e.start).isValid(), end : moment(e.end).isValid()})
   }
 
-  private dateSelected(e: DateSelectArg): void {
-    this.setState({ start: moment(e.start).utc().add(10,'h'), end: moment(e.end).utc().add(-10,'h') });
-    this.isValidDict["start"] = moment(e.start).isValid();
-    this.isValidDict["end"] = moment(e.end).isValid();
-    this.setFormIsValid();
+
+  const setReasonFv = (e: string, v: boolean): void => {
+    setReason(e);
+    setIsValidDict({reason : v})
   }
 
-
-  private setReason(e: string, v: boolean): void {
-    this.reason = e;
-    this.isValidDict["reason"] = v;
-    this.setFormIsValid();
+  const setFormIsValidFv = () => {
+    setFormIsValid(Object.keys(isValidDict).filter(key => !isValidDict[key]).length === 0);
   }
 
-  private setFormIsValid() {
-    this.setState({ formIsValid: Object.keys(this.isValidDict).filter(key => !this.isValidDict[key]).length === 0 });
+  const reasonEnterPressed = () => {
+    sendRequest();
   }
 
-  private reasonEnterPressed() {
-    this.sendRequest();
-  }
-
-  private handleEmailChange(email: string) {
-    this.setState({ email: email });
-  }
-
-  private getAvailableHolidays() {
-    const decoded : any = jwt_decode(this.token);
+  const getAvailableHolidays = () => {
+    const decoded : any = jwt_decode(props.token);
     const userId = decoded['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'];
     let url = `${process.env.REACT_APP_API_PATH}/holiday/availableholidayforuser/` + userId.toString();
-    this.props.setLoadingState(true);
+    props.setLoadingState(true);
 
     const requestOptions = {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + this.token
+        'Authorization': 'Bearer ' + props.token
       },
     };
 
     fetch(url, requestOptions)
       .then(async response => {
         if (!response.ok) {
-          this.props.showToastrMessage({severity: 'error', summary:'Sikertelen művelet', detail: 'Sikertelen művelet'});
+          props.showToastrMessage({severity: 'error', summary:'Sikertelen művelet', detail: 'Sikertelen művelet'});
         } else {
           const data: number = await response.json();
-          this.setState({ availableHoliday: data });
+          setAvailableHoliday(data);
         }
-        this.props.setLoadingState(false);
+        props.setLoadingState(false);
       })
       .catch(error => {
-        this.props.showToastrMessage({severity: 'error', summary:'Sikertelen művelet', detail: 'Sikertelen művelet'});
-        this.props.setLoadingState(false);
+        props.showToastrMessage({severity: 'error', summary:'Sikertelen művelet', detail: 'Sikertelen művelet'});
+        props.setLoadingState(false);
       });
   }
 
-  private sendRequest() {
-    if (!this.state.formIsValid) {
+  const sendRequest = () => {
+    if (!formIsValid) {
       return;
     }
-    this.props.setLoadingState(true);
+    props.setLoadingState(true);
     
     let url = `${process.env.REACT_APP_API_PATH}/holiday`;
     
     let holidayReq: HolidayRequestModel = {
-      start: this.state.start,
-      end: this.state.end,
-      reason: this.reason
+      start: start,
+      end: end,
+      reason: reason
     }
     const requestOptions = {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + this.token
+        'Authorization': 'Bearer ' + props.token
       },
       body: JSON.stringify(holidayReq)
     };
@@ -130,21 +112,19 @@ class HolidayPage extends React.PureComponent<any> {
     fetch(url, requestOptions)
       .then(async response => {
         if (!response.ok) {
-          this.props.showToastrMessage({severity: 'error', summary:'Sikertelen művelet', detail: 'Sikertelen művelet'});
+          props.showToastrMessage({severity: 'error', summary:'Sikertelen művelet', detail: 'Sikertelen művelet'});
         } else {
-          this.props.showToastrMessage({severity: 'success', summary:'Sikeres művelet', detail: 'Sikeres művelet'});
-        }
-        this.setState({ body: "", subject: "", name: "", email: "", showMessage: true });
-        this.props.setLoadingState(false);
+          props.showToastrMessage({severity: 'success', summary:'Sikeres művelet', detail: 'Sikeres művelet'});
+        };
+        props.setLoadingState(false);
       })
       .catch(error => {
-        this.props.showToastrMessage({severity: 'error', summary:'Sikertelen művelet', detail: 'Sikertelen művelet'});
-        this.props.setLoadingState(false);
+        props.showToastrMessage({severity: 'error', summary:'Sikertelen művelet', detail: 'Sikertelen művelet'});
+        props.setLoadingState(false);
       });
   }
 
-  public render() {
-    let confReason: InputTextAreaModel = {
+  const confReason: InputTextAreaModel = {
       label: 'Kérelem oka',
       id: "reason_id",
       required: true,
@@ -157,35 +137,20 @@ class HolidayPage extends React.PureComponent<any> {
     return (
       <React.Fragment>
         <h1>Új igény rögzítése</h1>
-        <h3>Elérhető szabadnapok - {this.state.availableHoliday}</h3>
+        <h3>Elérhető szabadnapok - {availableHoliday}</h3>
         
-        <CalendarBase dateSelected={this.dateSelected}></CalendarBase>
-        {/* <FullCalendar selectable={true}
-          locale={'hu'}
-          headerToolbar={{
-            right: 'prev,next',
-            center: 'title',
-            left: ''
-          }}
-          plugins={[interactionPlugin, dayGridPlugin]}
-          initialView="dayGridMonth"
-          select={this.dateSelected}
-          selectOverlap={false}
-          unselectAuto={false}
-          selectMirror={true}
-        /> */}
-        {moment(this.state.start).isValid()
-          ? <label>{moment(this.state.start).format('YYYY. MMMM DD.')} - {moment(this.state.end).format('YYYY. MMMM DD.')}</label> 
+        <CalendarBase dateSelected={dateSelected}></CalendarBase>
+        {moment(start).isValid()
+          ? <label>{moment(start).format('YYYY. MMMM DD.')} - {moment(end).format('YYYY. MMMM DD.')}</label> 
           : <></>}
         
         <div>
-          <InputTextArea config={confReason} rows={5} cols={30} value={this.reason}
-            onInputValueChange={this.setReason} enterPressed={this.reasonEnterPressed} />
+          <InputTextArea config={confReason} rows={5} cols={30} value={reason}
+            onInputValueChange={setReasonFv} enterPressed={reasonEnterPressed} />
         </div>
-        <Button disabled={!this.state.formIsValid} className="btn-action" onClick={this.sendRequest}>Mentés</Button>
+        <Button disabled={!formIsValid} className="btn-action" onClick={sendRequest}>Mentés</Button>
       </React.Fragment>
     );
-  }
 };
 
 function mapStateToProps(state :any) {

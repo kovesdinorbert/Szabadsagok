@@ -1,9 +1,8 @@
-import React, { RefObject } from 'react';
+import React, { useEffect } from 'react';
 import { connect } from 'react-redux';
 import * as AppContextStore from '../../../store/AppContextStore';
 import CalendarBase from '../../Component/CalendarBase/CalendarBase';
 import IncomingHolidays from '../../Component/IncomingHolidays/IncomingHolidays';
-import { Calendar } from 'primereact/calendar';
 
 import './design.css';
 import EventPage from '../EventPage/EventPage';
@@ -11,26 +10,14 @@ import EventPage from '../EventPage/EventPage';
 export interface IState {
 }
 
-class HomePage extends React.Component<any> {
+function HomePage(props: any) {
 
-  public state: IState = {
-  };
-  token: string = "";
-  date7: any = "";
-
-  constructor(props: any) {
-    super(props);
-  }
-
-  componentDidMount() {
-    if (!this.props.token) {
+  useEffect(() => {
+    if (!props.token) {
     } else {
-      this.token = this.props.token;
     }
-  }
+  }, []);
 
-
-  public render() {
     return (
       <React.Fragment>
         <div className='home-page-block'>
@@ -45,7 +32,6 @@ class HomePage extends React.Component<any> {
         </div>
       </React.Fragment>
     );
-  }
 };
 
 function mapStateToProps(state: any) {

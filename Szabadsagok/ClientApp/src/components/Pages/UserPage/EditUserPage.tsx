@@ -1,118 +1,92 @@
-import React, { RefObject } from 'react';
-import { connect } from 'react-redux';
-import { Button } from 'primereact/button';
-import { MultiSelect } from 'primereact/multiselect';
-import { Calendar } from 'primereact/calendar';
-import InputField from '../../Common/InputField/InputField';
-import { InputFieldModel } from '../../Common/InputField/InputFieldModel';
-import { faEnvelopeSquare, faQuran } from '@fortawesome/free-solid-svg-icons';
-import { InputNumericModel } from '../../Common/InputNumeric/InputNumericModel';
-import InputNumeric from '../../Common/InputNumeric/InputNumeric';
-import { UserDataModel } from './UserDataModel';
-import { Guid } from 'guid-typescript';
-import * as UserStore from '../../../store/AppContextStore';
-import { RoleEnum } from '../../../enums/RoleEnum';
-import moment from 'moment';
-import { HolidayForYearModel } from './HolidayForYearModel';
+import React, { RefObject, useEffect, useState } from "react";
+import { connect } from "react-redux";
+import { Button } from "primereact/button";
+import { MultiSelect } from "primereact/multiselect";
+import { Calendar } from "primereact/calendar";
+import InputField from "../../Common/InputField/InputField";
+import { InputFieldModel } from "../../Common/InputField/InputFieldModel";
+import { faEnvelopeSquare, faQuran } from "@fortawesome/free-solid-svg-icons";
+import { InputNumericModel } from "../../Common/InputNumeric/InputNumericModel";
+import InputNumeric from "../../Common/InputNumeric/InputNumeric";
+import { UserDataModel } from "./UserDataModel";
+import { Guid } from "guid-typescript";
+import * as UserStore from "../../../store/AppContextStore";
+import { RoleEnum } from "../../../enums/RoleEnum";
+import moment from "moment";
+import { HolidayForYearModel } from "./HolidayForYearModel";
 
-class EditUserPage extends React.Component<any> {
+function EditUserPage(props: any) {
+  const [formIsValid, setFormIsValid] = useState<boolean>(false);
+  const [holidays, setHolidays] = useState<number>(0);
+  const [year, setYear] = useState<number>(0);
+  const [user, setUser] = useState(props.selectedUser);
+  const [rendered, setRendered] = useState<boolean>(false);
+  const [isValidDict, setIsValidDict] = useState<any>({
+    name: false,
+    email: false,
+  });
 
-  public state: any = {
-    formIsValid: false,
-    holidays: 0,
-    year: null,
-    user: { name: "", email: "", id: "", roles: null }
-  };
-  token: string = "";
-  user :UserDataModel = { name: "", email: "", id: "", roles: [] };
-  year: number = 0;
-  roles = [
-    {label: 'Általános', value: RoleEnum.Common},
-    {label: 'Elfogadó', value: RoleEnum.Accepter},
-    {label: 'Adminisztrátor', value: RoleEnum.Admin}
+  const roles = [
+    { label: "Általános", value: RoleEnum.Common },
+    { label: "Elfogadó", value: RoleEnum.Accepter },
+    { label: "Adminisztrátor", value: RoleEnum.Admin },
   ];
-  isValidDict: {[key: string]: boolean} = {name: false, email: false};
 
-  constructor(props: any) {
-    super(props);
-    this.reasonEnterPressed = this.reasonEnterPressed.bind(this);
-    this.setFormIsValid = this.setFormIsValid.bind(this);
-    this.setEmail = this.setEmail.bind(this);
-    this.setName = this.setName.bind(this);
-    this.setYear = this.setYear.bind(this);
-    this.setRoles = this.setRoles.bind(this);
-    this.setHolidays = this.setHolidays.bind(this);
-    this.sendRequest = this.sendRequest.bind(this);
-
-    if (props.selectedUser && props.selectedUser[0]) {
-      this.user = {...props.selectedUser[0]};
-      this.isValidDict = {name: true, email: true};
+  useEffect(() => {
+    if (!props.token) {
+    } else if (!rendered) {
+      setIsValidDict({ name: true, email: true });
+      setRendered(true);
     } else {
-      this.user = { email: '', name: '', roles: [] };
+      setFormIsValidFv();
     }
-  }
-  
-  componentDidMount() {
-    this.setState({user: {roles : this.user.roles}});
-    if (!this.props.token) {
-    } else {
-      this.token = this.props.token;
-      this.sendRequest();
-    }
-  }
+  }, [rendered, isValidDict]);
 
-  private setEmail(e: string, v: boolean): void {
-    this.user.email = e;
-    this.isValidDict["email"] = v;
-     
-     this.setFormIsValid();
-    }
-    
-    private setName(e: string, v: boolean): void {
-      this.user.name = e;
-      this.isValidDict["name"] = v;
-      
-      this.setFormIsValid();
-    }
-    
-    private setYear(e: number, v: boolean): void {
-      this.year = e;
-    }
-    
-    private async setRoles(e: any) {
-      await this.setState({user: {roles: e}});
+  const setEmail = (e: string, v: boolean): void => {
+    setIsValidDict({ email: v, name: isValidDict.name });
+    setUser({ email: e, id: user.id, name: user.name, roles: user.roles });
+  };
 
-      this.setFormIsValid();
-    }
-    
-    private setHolidays(e: number, v: boolean): void {
-    this.setFormIsValid();
-  }
+  const setName = (e: string, v: boolean): void => {
+    setIsValidDict({ name: v, email: isValidDict.email });
+    setUser({ roles: user.roles, name: e, email: user.email, id: user.id });
+  };
 
-  private setFormIsValid() {
-    this.setState({ formIsValid: Object.keys(this.isValidDict).filter(key => !this.isValidDict[key]).length === 0
-                                 && this.state.user.roles && this.state.user.roles.length > 0 });
-  }
+  const setYearFv = (e: number, v: boolean): void => {
+    setYear(e);
+  };
 
-  private reasonEnterPressed() {
-    this.sendRequest();
-  }
+  const setRoles = (e: any) => {
+    setUser({ roles: e, name: user.name, email: user.email, id: user.id });
+    setIsValidDict({ name: isValidDict.name, email: isValidDict.email });
+  };
 
+  const setHolidaysFv = (e: number, v: boolean): void => {
+    // setFormIsValidFv();
+  };
 
-  private sendRequest() {
-    if (!this.state.formIsValid) {
+  const setFormIsValidFv = () => {
+    setFormIsValid(
+      Object.keys(isValidDict).filter((key) => !isValidDict[key]).length ===
+        0 &&
+        user.roles &&
+        user.roles.length > 0
+    );
+  };
+
+  const sendRequest = () => {
+    if (!formIsValid) {
       return;
     }
-    
-  this.props.setLoadingState(true);
+
+    props.setLoadingState(true);
 
     let url = ``;
-
-    let userDataReq: UserDataModel = this.user;
-    userDataReq.roles = this.state.user.roles;
+    let userDataReq: UserDataModel = user;
+    userDataReq.roles = user.roles;
     let holidayNumber: HolidayForYearModel = {
       year: moment().year(),
-      maxHoliday: this.year
+      maxHoliday: year,
     };
     userDataReq.holidayConfigs = [];
     userDataReq.holidayConfigs.push(holidayNumber);
@@ -121,128 +95,173 @@ class EditUserPage extends React.Component<any> {
     if (userDataReq.id) {
       url = `${process.env.REACT_APP_API_PATH}/user/updateuser`;
       requestOptions = {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer ' + this.token
+          "Content-Type": "application/json",
+          Authorization: "Bearer " + props.token,
         },
-        body: JSON.stringify(userDataReq)
+        body: JSON.stringify(userDataReq),
       };
       fetch(url, requestOptions)
-        .then(async response => {
+        .then(async (response) => {
           if (!response.ok) {
-            this.props.showToastrMessage({severity: 'error', summary:'Sikertelen művelet', detail: 'Sikertelen művelet'});
+            props.showToastrMessage({
+              severity: "error",
+              summary: "Sikertelen művelet",
+              detail: "Sikertelen művelet",
+            });
           } else {
-            this.props.showToastrMessage({severity: 'success', summary:'Sikeres művelet', detail: 'Sikeres művelet'});
+            props.showToastrMessage({
+              severity: "success",
+              summary: "Sikeres művelet",
+              detail: "Sikeres művelet",
+            });
           }
-          this.setState({ body: "", subject: "", showMessage: true });
-          this.props.setLoadingState(false);
-          this.props.updateListCb(this.user);
+          props.setLoadingState(false);
+          props.updateListCb(user);
         })
-        .catch(error => {
-          this.props.showToastrMessage({severity: 'error', summary:'Sikertelen művelet', detail: 'Sikertelen művelet'});
-          this.props.setLoadingState(false);
+        .catch((error) => {
+          props.showToastrMessage({
+            severity: "error",
+            summary: "Sikertelen művelet",
+            detail: "Sikertelen művelet",
+          });
+          props.setLoadingState(false);
         });
     } else {
       url = `${process.env.REACT_APP_API_PATH}/user/createuser`;
       requestOptions = {
-        method: 'PUT',
+        method: "PUT",
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer ' + this.token
+          "Content-Type": "application/json",
+          Authorization: "Bearer " + props.token,
         },
-        body: JSON.stringify(userDataReq)
+        body: JSON.stringify(userDataReq),
       };
       fetch(url, requestOptions)
-        .then(async response => {
+        .then(async (response) => {
           if (!response.ok) {
-            this.props.showToastrMessage({severity: 'error', summary:'Sikertelen művelet', detail: 'Sikertelen művelet'});
+            props.showToastrMessage({
+              severity: "error",
+              summary: "Sikertelen művelet",
+              detail: "Sikertelen művelet",
+            });
           } else {
             var data: UserDataModel = await response.json();
-            this.user = data;
-            this.props.showToastrMessage({severity: 'success', summary:'Sikeres művelet', detail: 'Sikeres művelet'});
+            props.showToastrMessage({
+              severity: "success",
+              summary: "Sikeres művelet",
+              detail: "Sikeres művelet",
+            });
+            setUser(data);
+            props.updateListCb(data);
           }
-          this.setState({ body: "", subject: "", showMessage: true });
-          this.props.updateListCb(this.user);
-          this.props.setLoadingState(false);
+          props.setLoadingState(false);
         })
-        .catch(error => {
-          this.props.showToastrMessage({severity: 'error', summary:'Sikertelen művelet', detail: 'Sikertelen művelet'});
-          this.props.setLoadingState(false);
+        .catch((error) => {
+          props.showToastrMessage({
+            severity: "error",
+            summary: "Sikertelen művelet",
+            detail: "Sikertelen művelet",
+          });
+          props.setLoadingState(false);
         });
     }
+  };
 
+  const confEmail: InputFieldModel = {
+    label: "Email cím",
+    id: "email_id",
+    required: true,
+    email: true,
+    icon: { icon: faEnvelopeSquare },
+    type: "email",
+  };
+  const confName: InputFieldModel = {
+    label: "Név",
+    id: "name_id",
+    required: true,
+    icon: { icon: faEnvelopeSquare },
+    type: "text",
+  };
+  const confAvailableHolidays: InputNumericModel = {
+    label: "Elhasználható szabadság",
+    id: "availableholidays_id",
+    required: true,
+    min: 1,
+    max: 60,
+    icon: { icon: faEnvelopeSquare },
+    type: "text",
+  };
+  const confYear: InputNumericModel = {
+    label: "Év " + moment().year(),
+    id: "yearconf_id",
+    required: false,
+    icon: { icon: faEnvelopeSquare },
+    type: "text",
+  };
 
-  }
+  return (
+    <React.Fragment>
+      <div>
+        <InputField
+          config={confEmail}
+          value={user.email}
+          onInputValueChange={setEmail}
+        />
+      </div>
+      <div>
+        <InputField
+          config={confName}
+          value={user.name}
+          onInputValueChange={setName}
+        />
+      </div>
+      <div>
+        <InputNumeric
+          config={confAvailableHolidays}
+          value={holidays}
+          onInputValueChange={setHolidaysFv}
+        />
+      </div>
+      <div>
+        <label htmlFor={"role_select"}>Szerepkörök</label>
+        <MultiSelect
+          id="role_select"
+          value={user.roles}
+          options={roles}
+          onChange={(e) => setRoles(e.value)}
+          optionLabel="label"
+          placeholder=""
+          display="chip"
+        />
+      </div>
+      <div>
+        <InputNumeric
+          config={confYear}
+          value={year}
+          onInputValueChange={setYearFv}
+        />
+      </div>
+      <Button
+        disabled={!formIsValid}
+        className="btn-action"
+        onClick={sendRequest}
+      >
+        Mentés
+      </Button>
+      <Button className="btn-action" onClick={props.onModalClose}>
+        Mégse
+      </Button>
+    </React.Fragment>
+  );
+}
 
-  public render() {
-    let confEmail: InputFieldModel = {
-      label: 'Email cím',
-      id: "email_id",
-      required: true,
-      email: true,
-      icon: { icon: faEnvelopeSquare },
-      type: 'email',
-    };
-    let confName: InputFieldModel = {
-      label: 'Név',
-      id: "name_id",
-      required: true,
-      icon: { icon: faEnvelopeSquare },
-      type: 'text',
-    };
-    let confAvailableHolidays: InputNumericModel = {
-      label: 'Elhasználható szabadság',
-      id: "availableholidays_id",
-      required: true,
-      min: 1,
-      max: 40,
-      icon: { icon: faEnvelopeSquare },
-      type: 'text',
-    };
-    let confYear: InputNumericModel = {
-      label: 'Év ' + moment().year(),
-      id: "yearconf_id",
-      required: false,
-      icon: { icon: faEnvelopeSquare },
-      type: 'text',
-    };
-
-    return (
-      <React.Fragment>
-        <div>
-          <InputField config={confEmail} value={this.user.email} onInputValueChange={this.setEmail} />
-        </div>
-        <div>
-          <InputField config={confName} value={this.user.name} onInputValueChange={this.setName} />
-        </div>
-        <div>
-          <InputNumeric config={confAvailableHolidays} value={this.state.holidays} onInputValueChange={this.setHolidays} />
-        </div>
-        <div>
-        <label htmlFor={"role_select"}>
-            Szerepkörök
-          </label>
-          <MultiSelect id='role_select' value={this.state.user.roles} options={this.roles} onChange={(e) => this.setRoles(e.value)} optionLabel="label" placeholder="" display="chip" />
-        </div>
-        <div>
-          <InputNumeric config={confYear} value={this.year} onInputValueChange={this.setYear} />
-        </div>
-        <Button disabled={!this.state.formIsValid} className="btn-action" onClick={this.sendRequest}>Mentés</Button>
-        <Button className="btn-action" onClick={this.props.onModalClose}>Mégse</Button>
-      </React.Fragment>
-    );
-  }
-};
-
-function mapStateToProps(state :any) {
+function mapStateToProps(state: any) {
   const token = state.appcontext.token;
   return {
-    token
+    token,
   };
 }
 
-export default connect(
-  mapStateToProps,
-  UserStore.actionCreators
-)(EditUserPage);
+export default connect(mapStateToProps, UserStore.actionCreators)(EditUserPage);
