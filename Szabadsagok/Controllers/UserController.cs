@@ -1,18 +1,15 @@
 ﻿using MapsterMapper;
 using Core.Entities;
-using Core.Enums;
-using Core.Exceptions;
 using Core.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
-using System.Security.Claims;
 using System.Threading.Tasks;
 using Szabadsagok.App_Conf;
 using Szabadsagok.Dto;
-using Szabadsagok.Helpers;
+using System.Linq;
 
 namespace Szabadsagok.Controllers
 {
@@ -41,16 +38,19 @@ namespace Szabadsagok.Controllers
         public async Task<IActionResult> Authenticate([FromBody]LoginResultDto login)
         {
             //var user = await _userService.Login(login.Email, login.Password);
-            var user = await _userService.GetUserByEmail(login.Email);
-            //var user = await _userService.GetUser(int.Parse("1"));
-            //await _userService.UpdateUser(user, 1);
-            if (user != null)
+            var userResult = await _userService.GetUserByEmail(login.Email);
+
+            var token = "";
+
+            if (!userResult.Errors.Any())
             {
-                var token = await _userService.GenerateToken(user);
-                return Ok(new LoginResultDto() { Email = user.Email, Id = user.Id.ToString(), Token = token });
+                token = await _userService.GenerateToken(userResult.Value);
             }
 
-            return Unauthorized();
+            return userResult.MatchFirst<IActionResult>(user => Ok(new LoginResultDto() { Email = user.Email, 
+                                                                                          Id = user.Id.ToString(), 
+                                                                                          Token = token }),
+                                                        error => Unauthorized());
         }
 
         //[HttpGet]
@@ -107,20 +107,10 @@ namespace Szabadsagok.Controllers
         {
             var userId = GetUserIdFromToken();
 
-            try
-            {
-                await _userService.UpdateUser(_mapper.Map<User>(userData), userId);
-            }
-            catch (BusinessLogicException e)
-            {
-                return StatusCode(StatusCodes.Status403Forbidden, e.Message);
-            }
-            catch (Exception e)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError);
-            }
+            var result = await _userService.UpdateUser(_mapper.Map<User>(userData), userId);
 
-            return Ok();
+            return result.MatchFirst(result => Ok(),
+                                     error => BusinessError(error));
         }
 
         [HttpPut("createuser")]
@@ -132,26 +122,10 @@ namespace Szabadsagok.Controllers
         {
             var userId = GetUserIdFromToken();
 
-            UserDataDto ret;
+            var result = await _userService.CreateUser(userData.Name, userData.Email, userData.Roles, userId);
 
-            try
-            {
-                ret =_mapper.Map<UserDataDto>(await _userService.CreateUser(userData.Name, userData.Email, userData.Roles, userId));
-                if (ret == null || string.IsNullOrEmpty(ret.Id))
-                {
-                    return StatusCode(StatusCodes.Status500InternalServerError);
-                }
-            }
-            catch (BusinessLogicException e)
-            {
-                return StatusCode(StatusCodes.Status403Forbidden, e.Message);
-            }
-            catch (Exception e)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError);
-            }
-
-            return Ok(ret);
+            return result.MatchFirst(result => Ok(_mapper.Map<UserDataDto>(result)),
+                                     error => BusinessError(error));
         }
 
         [HttpDelete("{id}")]

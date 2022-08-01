@@ -1,8 +1,9 @@
 ﻿using Core.Configuration;
 using Core.Entities;
 using Core.Enums;
-using Core.Exceptions;
+using Core.Errors;
 using Core.Interfaces;
+using ErrorOr;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
@@ -76,45 +77,43 @@ namespace Infrastructure.Services
             return await _userRepository.FindByIdAsync(userId);
         }
 
-        public async Task<User> GetUserByEmail(string email)
+        public async Task<ErrorOr<User>> GetUserByEmail(string email)
         {
             var users = await _userRepository.FindAllAsync(u => u.Email.ToLower() == email.ToLower() && !u.Deleted,
                                                            u => u.Include(m => m.Holidays));
 
-            try
+            if (users.Any())
             {
-                return users.Single();
+                return users.FirstOrDefault();
             }
-            catch (Exception)
+            else
             {
-                return null;
+
+                return UserErrors.UserNotFound;
             }
         }
 
-        public async Task<User> CreateUser(string name, string email, List<RoleEnum> roles, int currentUserId)
+        public async Task<ErrorOr<User>> CreateUser(string name, string email, List<RoleEnum> roles, int currentUserId)
         {
             if (string.IsNullOrEmpty(name) || string.IsNullOrEmpty(email))
-                throw new BusinessLogicException("név és email megadása kötelező");
+                return UserErrors.NameAndEmailRequired;
 
             var user = new User()
             {
                 Deleted = false,
             };
             user.Roles = roles == null || !roles.Any() ? new List<RoleEnum>() { RoleEnum.Common} : roles;
-            if (!string.IsNullOrWhiteSpace(name) && !string.IsNullOrWhiteSpace(email))
-            {
-                user.Name = name;
-                user.Email = email;
+            user.Name = name;
+            user.Email = email;
 
-                await _userRepository.CreateAsync(user, currentUserId);
-            }
+            await _userRepository.CreateAsync(user, currentUserId);
+
             return user;
         }
 
-        public async Task UpdateUser(User user, int currentUserId)
+        public async Task<ErrorOr<bool>> UpdateUser(User user, int currentUserId)
         {
-            if (string.IsNullOrEmpty(user.Name) || string.IsNullOrEmpty(user.Email))
-                throw new BusinessLogicException("név és email megadása kötelező");
+            return UserErrors.NameAndEmailRequired;
 
             if (user.Id <= 0)
                 throw new ArgumentNullException(nameof(user.Id));
@@ -129,6 +128,7 @@ namespace Infrastructure.Services
             await _userRepository.UpdateAsync(dbuser, currentUserId);
 
             await CreateHolidayConfigs(user.HolidayConfigs.ToList(), dbuser.Id, currentUserId);
+            return true;
         }
 
         private async Task CreateHolidayConfigs(List<HolidayConfig> holidayConfigs, int userId, int currentUserId)

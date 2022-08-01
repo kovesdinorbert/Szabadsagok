@@ -1,7 +1,8 @@
 ﻿using Core.Entities;
 using Core.Enums;
-using Core.Exceptions;
+using Core.Errors;
 using Core.Interfaces;
+using ErrorOr;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -25,13 +26,13 @@ namespace Infrastructure.Services
             _yearConfigService = yearConfigService;
         }
 
-        public async Task CreateHoliday(Holiday holiday, int currentUserId)
+        public async Task<ErrorOr<bool>> CreateHoliday(Holiday holiday, int currentUserId)
         {
             var requestedHolidays = (await _holidayRepository.FindAllAsync(h => h.UserId == currentUserId 
                                                                              && h.Status == StatusEnum.Requested));
             if (requestedHolidays.Any())
             {
-                throw new BusinessLogicException("van kiírt szabadság, amit még nem bíráltak el");
+                return HolidayErrors.FoundOpenedStatusHolidayRequest;
             }
 
             var yearconfigs = await _yearConfigService.GetYearConfigs(holiday.Start, holiday.End);
@@ -42,23 +43,26 @@ namespace Infrastructure.Services
             if ((await GetAvailableHolidayNumber(currentUserId)) - holiday.HolidayCount >= 0)
             {
                 await _holidayRepository.CreateAsync(holiday, currentUserId);
+                return true;
             }
             else
             {
-                throw new BusinessLogicException("nincs elég elérhető szabadnap");
+                return HolidayErrors.NotEnoughAvailableHolidays;
             }
         }
 
-        public async Task DeleteHoliday(int holidayId, int currentUserId)
+        public async Task<ErrorOr<bool>> DeleteHoliday(int holidayId, int currentUserId)
         {
             var holiday = await _holidayRepository.FindByIdAsync(holidayId);
             if (holiday == null ) throw new ArgumentNullException(nameof(holiday));
             if (holiday.Start.Date <= DateTime.Now.Date)
             {
-                throw new BusinessLogicException("már elkezdett szabadság nem törölhető");
+                return HolidayErrors.HolidayAlreadyStarted;
             }
+
             holiday.Status = StatusEnum.Deleted;
             await _holidayRepository.UpdateAsync(holiday, currentUserId);
+            return true;
         }
 
         public async Task<int> GetAvailableHolidayNumber(int userId)
@@ -84,17 +88,18 @@ namespace Infrastructure.Services
             return holidays.OrderBy(h => h.Start).ToList();
         }
 
-        public async Task UpdateStatusHoliday(int holidayId, StatusEnum status, int currentUserId)
+        public async Task<ErrorOr<bool>> UpdateStatusHoliday(int holidayId, StatusEnum status, int currentUserId)
         {
             var holiday = await _holidayRepository.FindByIdAsync(holidayId);
             if (holiday == null) throw new ArgumentNullException(nameof(holiday));
             if (holiday.Status != StatusEnum.Requested)
             {
-                throw new BusinessLogicException("csak igényelt állapotú szabadságigény módosítható");
+                return HolidayErrors.HolidayStatusIsNotRequired;
             }
 
             holiday.Status = status;
             await _holidayRepository.UpdateAsync(holiday, currentUserId);
+            return true;
         }
     }
 }

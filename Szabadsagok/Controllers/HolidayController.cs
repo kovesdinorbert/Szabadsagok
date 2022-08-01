@@ -1,18 +1,15 @@
 ﻿using MapsterMapper;
 using Core.Entities;
 using Core.Enums;
-using Core.Exceptions;
 using Core.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
-using System.Security.Claims;
 using System.Threading.Tasks;
 using Szabadsagok.App_Conf;
 using Szabadsagok.Dto;
-using Szabadsagok.Helpers;
 
 namespace Szabadsagok.Controllers
 {
@@ -74,20 +71,10 @@ namespace Szabadsagok.Controllers
         {
             var userId = GetUserIdFromToken();
 
-            try
-            {
-                await _holidayService.CreateHoliday(_mapper.Map<Holiday>(requestDto), userId);
-            }
-            catch (BusinessLogicException e)
-            {
-                return StatusCode(StatusCodes.Status403Forbidden, e.Message);
-            }
-            catch (Exception e)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError);
-            }
+            var result = await _holidayService.CreateHoliday(_mapper.Map<Holiday>(requestDto), userId);
 
-            return Ok();
+            return result.MatchFirst(result => Ok(),
+                                     error => BusinessError(error));
         }
 
         [HttpDelete]
@@ -99,20 +86,10 @@ namespace Szabadsagok.Controllers
         {
             var userId = GetUserIdFromToken();
 
-            try
-            {
-                await _holidayService.DeleteHoliday(int.Parse(_dataProtectionMapProvider.Unprotect(id)), userId);
-            }
-            catch (BusinessLogicException e)
-            {
-                return StatusCode(StatusCodes.Status403Forbidden, e.Message);
-            }
-            catch (Exception e)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError);
-            }
+            var result = await _holidayService.DeleteHoliday(int.Parse(_dataProtectionMapProvider.Unprotect(id)), userId);
 
-            return Ok();
+            return result.MatchFirst(result => Ok(),
+                                     error => BusinessError(error));
         }
 
         [HttpPost]
@@ -124,20 +101,10 @@ namespace Szabadsagok.Controllers
         {
             var userId = GetUserIdFromToken();
 
-            try
-            {
-                await _holidayService.UpdateStatusHoliday(int.Parse(_dataProtectionMapProvider.Unprotect(holidayId)), status, userId);
-            }
-            catch (BusinessLogicException e)
-            {
-                return StatusCode(StatusCodes.Status403Forbidden, e.Message);
-            }
-            catch (Exception e)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError);
-            }
+            var result = await _holidayService.UpdateStatusHoliday(int.Parse(_dataProtectionMapProvider.Unprotect(holidayId)), status, userId);
 
-            return Ok();
+            return result.MatchFirst(result => Ok(),
+                                     error => BusinessError(error));
         }
     }
 }
