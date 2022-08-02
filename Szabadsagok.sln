@@ -3,11 +3,13 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Szabadsagok", "Szabadsagok\Szabadsagok.csproj", "{1268A4C8-E7EA-4A17-B9AD-AAE1779F4370}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Szabadsagok", "Szabadsagok\Szabadsagok.csproj", "{1268A4C8-E7EA-4A17-B9AD-AAE1779F4370}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Core", "Core\Core.csproj", "{0A47C1AE-C7A8-448B-8E65-51EE832ECE36}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Core", "Core\Core.csproj", "{0A47C1AE-C7A8-448B-8E65-51EE832ECE36}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Infrastructure", "Infrastructure\Infrastructure.csproj", "{1B12320B-9968-4A7D-97A3-7149C9439E6A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Infrastructure", "Infrastructure\Infrastructure.csproj", "{1B12320B-9968-4A7D-97A3-7149C9439E6A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MinimalApi", "MinimalApi\MinimalApi.csproj", "{9036C01B-6026-477A-B956-F2678DDDD12F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -27,6 +29,10 @@ Global
 		{1B12320B-9968-4A7D-97A3-7149C9439E6A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1B12320B-9968-4A7D-97A3-7149C9439E6A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1B12320B-9968-4A7D-97A3-7149C9439E6A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9036C01B-6026-477A-B956-F2678DDDD12F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9036C01B-6026-477A-B956-F2678DDDD12F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9036C01B-6026-477A-B956-F2678DDDD12F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9036C01B-6026-477A-B956-F2678DDDD12F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
