@@ -1,14 +1,8 @@
-/* Provide sufficient contrast against white background */
-a {
-  color: #0366d6;
+body {
+  background-color: #2a323d;
+  color: rgba(255, 255, 255, 0.87);
 }
 
-code {
-  color: #E01A76;
-}
-
-.btn-primary {
-  color: #fff;
-  background-color: #1b6ec2;
-  border-color: #1861ac;
+.p-inputtext, .p-multiselect {
+  margin-bottom: 15px !important;
 }

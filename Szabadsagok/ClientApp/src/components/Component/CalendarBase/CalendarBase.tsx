@@ -85,12 +85,14 @@ const CalendarBase = forwardRef<ICalendarBase, any>((props: any, ref) => {
     if (calendarRef == undefined || calendarRef == null) return;
     if (calendarRef.current == undefined || calendarRef.current == null) return;
 
-    let start = moment(calendarRef.current.getApi().view.activeStart).format(
-      "LL"
-    );
-    let end = moment(calendarRef.current.getApi().view.activeEnd).format("LL");
+    // let start = moment(calendarRef.current.getApi().view.activeStart).format(
+    //   "LL"
+    // );
+    // let end = moment(calendarRef.current.getApi().view.activeEnd).format("LL");
 
-    const url = `${process.env.REACT_APP_API_PATH}/event/` + start + "/" + end;
+    // const url = `${process.env.REACT_APP_API_PATH}/event/` + start + "/" + end;
+    let url = `${process.env.REACT_APP_API_PATH}/event`;
+
     const requestOptions = {
       method: "GET",
       headers: { Authorization: "Bearer " + props.token },

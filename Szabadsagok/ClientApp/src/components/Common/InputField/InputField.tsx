@@ -1,7 +1,8 @@
 import React from "react";
 import { InputFieldModel } from "./InputFieldModel";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { InputText } from 'primereact/inputtext';
+
+import 'primeicons/primeicons.css';
 
 export interface IState {
   touched: boolean;
@@ -82,7 +83,7 @@ export class InputField extends React.Component<any, IState>{
             {conf.label}
           </label>
         ) : null}
-        {conf && conf.icon ? <FontAwesomeIcon className="login-brand-icon" icon={conf.icon.icon} /> : <></>}
+        {conf && conf.icon ?<i className="{conf.icon}"></i> : <></>}
         <InputText
           classes={{
           }}

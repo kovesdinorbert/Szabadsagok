@@ -17,16 +17,32 @@ namespace Infrastructure.Services
             _yearConfigRepository = yearConfigRepository;
         }
 
-        public async Task<ErrorOr<List<YearConfig>>> GetYearConfigs(int year)
+        public async Task<ErrorOr<List<YearConfig>>> GetYearConfigs(int year, int currentUserId)
         {
             var configs = await _yearConfigRepository.FindAllAsync(yc => yc.Year == year);
+
+            if (!configs.Any())
+            {
+                await FillEmptyYearConfigs(year, currentUserId);
+                configs = await _yearConfigRepository.FindAllAsync(yc => yc.Year == year);
+            }
 
             return configs;
         }
 
-        public async Task<ErrorOr<List<YearConfig>>> GetYearConfigs(DateTime start, DateTime end)
+        public async Task<ErrorOr<List<YearConfig>>> GetYearConfigs(DateTime start, DateTime end, int currentUserId)
         {
             var configs = await _yearConfigRepository.FindAllAsync(yc => yc.Date >= start && yc.Date <= end);
+
+            if (!configs.Any())
+            {
+                await FillEmptyYearConfigs(start.Year, currentUserId);
+                if (start.Year != end.Year)
+                {
+                    await FillEmptyYearConfigs(end.Year, currentUserId);
+                }
+                configs = await _yearConfigRepository.FindAllAsync(yc => yc.Date >= start && yc.Date <= end);
+            }
 
             return configs;
         }
@@ -56,8 +72,15 @@ namespace Infrastructure.Services
 
         public async Task SetYearData(YearConfig yearConfig, int currentUserId)
         {
-            var yc = (await _yearConfigRepository.FindAllAsync(yc => yc.Year == yearConfig.Year 
-                                                                     && yc.Date.Date == yearConfig.Date.Date)).FirstOrDefault();
+            var yearData = (await _yearConfigRepository.FindAllAsync(yc => yc.Year == yearConfig.Year)).ToList();
+            if (!yearData.Any())
+            {
+                await FillEmptyYearConfigs(yearConfig.Year, currentUserId);
+                yearData = (await _yearConfigRepository.FindAllAsync(yc => yc.Year == yearConfig.Year)).ToList();
+            }
+
+            var yc = yearData.FirstOrDefault(yc => yc.Year == yearConfig.Year 
+                                                   && yc.Date.Date == yearConfig.Date.Date);
 
             if (yc != null)
             {
@@ -66,7 +89,7 @@ namespace Infrastructure.Services
             }
             else
             {
-                await _yearConfigRepository.CreateAsync(yearConfig, currentUserId);
+                throw new Exception("Nincs a módosítani kívánt dátum az adatbázisban! Nem lehetséges.");
             }
         }
     }

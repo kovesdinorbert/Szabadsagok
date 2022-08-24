@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Szabadsagok.Dto;
+using System;
 
 namespace Szabadsagok.Controllers
 {
@@ -32,12 +33,26 @@ namespace Szabadsagok.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetYear(int year)
         {
-            var yearConfigResult = await _yearConfigService.GetYearConfigs(year);
+            var yearConfigResult = await _yearConfigService.GetYearConfigs(year, GetUserIdFromToken());
 
             if (!yearConfigResult.IsError && yearConfigResult.Value.Any())
             {
-                var result = await _yearConfigService.FillEmptyYearConfigs(year, GetUserIdFromToken());
+                return yearConfigResult.MatchFirst(result => Ok(_mapper.Map<List<YearConfigDto>>(result)),
+                                                   error => BusinessError(error));
+            }
+            return NotFound();
+        }
 
+        [HttpGet("{start}/{end}")]
+        [ProducesResponseType(typeof(IEnumerable<List<YearConfigDto>>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> GetYear(DateTime start, DateTime end)
+        {
+            var yearConfigResult = await _yearConfigService.GetYearConfigs(start, end, GetUserIdFromToken());
+
+            if (!yearConfigResult.IsError && yearConfigResult.Value.Any())
+            {
                 return yearConfigResult.MatchFirst(result => Ok(_mapper.Map<List<YearConfigDto>>(result)),
                                                    error => BusinessError(error));
             }

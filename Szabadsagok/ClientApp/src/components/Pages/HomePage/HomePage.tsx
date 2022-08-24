@@ -7,6 +7,10 @@ import IncomingHolidays from '../../Component/IncomingHolidays/IncomingHolidays'
 import './design.css';
 import EventPage from '../EventPage/EventPage';
 
+import "primereact/resources/themes/bootstrap4-dark-blue/theme.css";  //theme
+import "primereact/resources/primereact.min.css";                  //core css
+import "primeicons/primeicons.css";                                //icons
+
 export interface IState {
 }
 

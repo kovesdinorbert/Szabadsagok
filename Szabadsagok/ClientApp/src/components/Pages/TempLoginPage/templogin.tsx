@@ -5,7 +5,6 @@ import { MultiSelect } from 'primereact/multiselect';
 import { Calendar } from 'primereact/calendar';
 import InputField from '../../Common/InputField/InputField';
 import { InputFieldModel } from '../../Common/InputField/InputFieldModel';
-import { faEnvelopeSquare, faQuran } from '@fortawesome/free-solid-svg-icons';
 import { InputNumericModel } from '../../Common/InputNumeric/InputNumericModel';
 import InputNumeric from '../../Common/InputNumeric/InputNumeric';
 import { Guid } from 'guid-typescript';
@@ -84,7 +83,7 @@ class TempLoginPage extends React.Component<any> {
       id: "email_id",
       required: true,
       email: true,
-      icon: { icon: faEnvelopeSquare },
+      icon: 'pi-envelope',
       type: 'email',
     };
 

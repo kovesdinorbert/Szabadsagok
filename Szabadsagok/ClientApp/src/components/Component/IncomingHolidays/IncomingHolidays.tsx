@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 import moment from 'moment';
-import { faEnvelopeSquare } from '@fortawesome/free-solid-svg-icons';
 import { IncomingHolidayModel } from './IncomingHolidayModel';
 import { InputTextAreaModel } from '../../Common/InputTextArea/InputTextAreaModel';
 import { DataTable, DataTableRowClassNameOptions } from 'primereact/datatable';
@@ -74,7 +73,7 @@ function IncomingHolidays(props: any) {
       required: true,
       rows: 5,
       cols: 30,
-      icon: { icon: faEnvelopeSquare },
+      icon: 'pi-envelope',
       type: 'email',
     };
 

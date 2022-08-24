@@ -35,7 +35,7 @@ namespace Infrastructure.Services
                 return HolidayErrors.FoundOpenedStatusHolidayRequest;
             }
 
-            var yearconfigsResult = await _yearConfigService.GetYearConfigs(holiday.Start, holiday.End);
+            var yearconfigsResult = await _yearConfigService.GetYearConfigs(holiday.Start, holiday.End, currentUserId);
 
             if (yearconfigsResult.IsError)
             {

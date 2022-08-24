@@ -1,7 +1,9 @@
 import React from "react";
 import { InputNumericModel } from "./InputNumericModel";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { InputNumber } from 'primereact/inputnumber';
+
+
+import 'primeicons/primeicons.css';
 
 export interface IState {
   touched: boolean;
@@ -83,7 +85,7 @@ export class InputNumeric extends React.Component<any, IState>{
             {conf.label}
           </label>
         ) : null}
-        {conf && conf.icon ? <FontAwesomeIcon className="login-brand-icon" icon={conf.icon.icon} /> : <></>}
+        {conf && conf.icon ? <i className="{conf.icon}"></i> : <></>}
         <InputNumber
           classes={{
           }}

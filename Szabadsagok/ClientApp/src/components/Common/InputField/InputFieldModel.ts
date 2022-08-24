@@ -1,4 +1,3 @@
-import { FontAwesomeIconProps } from '@fortawesome/react-fontawesome';
 
 export class InputFieldModel {
     label?: string;
@@ -6,7 +5,7 @@ export class InputFieldModel {
     minLength?: number;
     required?: boolean;
     email?: boolean;
-    icon?: FontAwesomeIconProps;
+    icon?: string;
     type?: string;
     otherProps?: any;
   }

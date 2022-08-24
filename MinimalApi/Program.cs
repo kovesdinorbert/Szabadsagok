@@ -176,17 +176,34 @@ app.MapDelete("/api/user/{id}", async (string id,
 
 
 
+app.MapGet("/api/year/{start}/{end}", async (DateTime start, DateTime end,
+                                 ClaimsPrincipal user,
+                                 [FromServices] IMapper mapper,
+                                 [FromServices] IYearConfigService yearConfigService)  =>
+{
+    var yearConfigResult = await yearConfigService.GetYearConfigs(start, end, GetUserIdFromToken(user));
+
+    if (!yearConfigResult.IsError)
+    {
+        return yearConfigResult.MatchFirst(result => Results.Ok(mapper.Map<List<YearConfigDto>>(result)),
+                                           error => BusinessError(error));
+    }
+    return Results.NotFound();
+})
+.RequireAuthorization()
+.WithName("GetYearStartEnd");
+
+
+
 app.MapGet("/api/year/{year}", async (int year,
                                  ClaimsPrincipal user,
                                  [FromServices] IMapper mapper,
                                  [FromServices] IYearConfigService yearConfigService)  =>
 {
-    var yearConfigResult = await yearConfigService.GetYearConfigs(year);
+    var yearConfigResult = await yearConfigService.GetYearConfigs(year, GetUserIdFromToken(user));
 
-    if (!yearConfigResult.IsError && yearConfigResult.Value.Any())
+    if (!yearConfigResult.IsError)
     {
-    var result = await yearConfigService.FillEmptyYearConfigs(year, GetUserIdFromToken(user));
-
         return yearConfigResult.MatchFirst(result => Results.Ok(mapper.Map<List<YearConfigDto>>(result)),
                                            error => BusinessError(error));
     }

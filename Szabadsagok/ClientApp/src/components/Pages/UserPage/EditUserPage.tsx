@@ -5,7 +5,7 @@ import { MultiSelect } from "primereact/multiselect";
 import { Calendar } from "primereact/calendar";
 import InputField from "../../Common/InputField/InputField";
 import { InputFieldModel } from "../../Common/InputField/InputFieldModel";
-import { faEnvelopeSquare, faQuran } from "@fortawesome/free-solid-svg-icons";
+import {PrimeIconsOptions} from "primereact/api"
 import { InputNumericModel } from "../../Common/InputNumeric/InputNumericModel";
 import InputNumeric from "../../Common/InputNumeric/InputNumeric";
 import { UserDataModel } from "./UserDataModel";
@@ -174,14 +174,14 @@ function EditUserPage(props: any) {
     id: "email_id",
     required: true,
     email: true,
-    icon: { icon: faEnvelopeSquare },
+    icon: "pi-envelope",
     type: "email",
   };
   const confName: InputFieldModel = {
     label: "Név",
     id: "name_id",
     required: true,
-    icon: { icon: faEnvelopeSquare },
+    icon: "pi-id-card",
     type: "text",
   };
   const confAvailableHolidays: InputNumericModel = {
@@ -190,14 +190,14 @@ function EditUserPage(props: any) {
     required: true,
     min: 1,
     max: 60,
-    icon: { icon: faEnvelopeSquare },
+    icon: "pi-calendar",
     type: "text",
   };
   const confYear: InputNumericModel = {
     label: "Év " + moment().year(),
     id: "yearconf_id",
     required: false,
-    icon: { icon: faEnvelopeSquare },
+    icon: "pi-bell",
     type: "text",
   };
 

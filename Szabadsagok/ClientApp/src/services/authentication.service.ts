@@ -78,7 +78,6 @@ export default class AuthenticationService  {
     // }
 
     isInRole(token: string, role: string) {
-        debugger;
       if (token && token !== "") {
         const jwtData = token.split('.')[1];
         const decodedJwtJsonData = window.atob(jwtData);

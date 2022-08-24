@@ -1,4 +1,3 @@
-import { FontAwesomeIconProps } from '@fortawesome/react-fontawesome';
 
 export class InputTextAreaModel {
     label?: string;
@@ -8,7 +7,7 @@ export class InputTextAreaModel {
     cols?: number;
     required?: boolean;
     // email?: boolean;
-    icon?: FontAwesomeIconProps;
+    icon?: string;
     type?: string;
     otherProps?: any;
   }

@@ -1,7 +1,10 @@
 import React from "react";
 import { InputTextAreaModel } from "./InputTextAreaModel";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+// import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { InputTextarea } from 'primereact/inputtextarea';
+
+import 'primeicons/primeicons.css';
+
 export interface IState {
   touched: boolean;
   value: string;
@@ -76,7 +79,7 @@ export class InputTextArea extends React.Component<any, IState>{
             {conf.label}
           </label>
         ) : null}
-        {conf && conf.icon ? <FontAwesomeIcon className="login-brand-icon" icon={conf.icon.icon} /> : <></>}
+        {conf && conf.icon ? <i className="{conf.icon}"></i> : <></>}
         <InputTextarea
           classes={{
           }}

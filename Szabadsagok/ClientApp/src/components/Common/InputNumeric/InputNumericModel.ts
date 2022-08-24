@@ -1,4 +1,3 @@
-import { FontAwesomeIconProps } from '@fortawesome/react-fontawesome';
 
 export class InputNumericModel {
     label?: string;
@@ -6,7 +5,7 @@ export class InputNumericModel {
     min?: number;
     max?: number;
     required?: boolean;
-    icon?: FontAwesomeIconProps;
+    icon?: string;
     type?: string;
     otherProps?: any;
   }
