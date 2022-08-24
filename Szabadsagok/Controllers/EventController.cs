@@ -1,12 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Security.Authentication;
-using System.Security.Claims;
 using System.Threading.Tasks;
 using Core.Entities;
 using Core.Interfaces;
-using Mapster;
 using MapsterMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -14,7 +10,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Szabadsagok.App_Conf;
 using Szabadsagok.Dto;
-using Szabadsagok.Helpers;
 
 namespace Szabadsagok.Controllers
 {
@@ -44,9 +39,10 @@ namespace Szabadsagok.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> Get()
         {
-            var events = await _eventService.GetEvents(false, GetUserIdFromToken());
+            var result = await _eventService.GetEvents(false);
 
-            return Ok(_mapper.Map<List<EventDto>>(events));
+            return result.MatchFirst(result => Ok(_mapper.Map<List<EventDto>>(result)),
+                                     error => BusinessError(error));
         }
 
         [HttpGet("{start}/{end}")]
@@ -54,24 +50,18 @@ namespace Szabadsagok.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> Get(DateTime start, DateTime end)
         {
-            var events = await _eventService.GetEvents(start, end, GetUserIdFromToken());
+            var result = await _eventService.GetEvents(start, end);
 
-            return Ok(_mapper.Map<List<EventDto>>(events));
+            return result.MatchFirst(result => Ok(_mapper.Map<List<EventDto>>(result)),
+                                     error => BusinessError(error));
         }
 
         [HttpDelete("{id}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public async Task<IActionResult> Delete(string  id)
         {
-            try
-            {
-                await _eventService.DeleteEvent(int.Parse(_dataProtectionMapProvider.Unprotect(id)), GetUserIdFromToken());
-            }
-            catch (Exception exception)
-            {
-                _logger.LogError("Event delete error: " + exception.Message);
-                return StatusCode(StatusCodes.Status500InternalServerError);
-            }
+            await _eventService.DeleteEvent(int.Parse(_dataProtectionMapProvider.Unprotect(id)), GetUserIdFromToken());
+
             return NoContent();
         }
 
@@ -81,20 +71,9 @@ namespace Szabadsagok.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> Create([FromBody] EventDto newEvent)
         {
-            try
-            {
-                await _eventService.AddNewEvent(_mapper.Map<Event>(newEvent), GetUserIdFromToken());
-                return StatusCode(StatusCodes.Status201Created);
-            }
-            catch (ArgumentOutOfRangeException)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError);
-            }
-            catch (Exception e)
-            {
-                _logger.LogError(e.Message);
-                return StatusCode(StatusCodes.Status500InternalServerError);
-            }
+            await _eventService.AddNewEvent(_mapper.Map<Event>(newEvent), GetUserIdFromToken());
+
+            return StatusCode(StatusCodes.Status201Created);
         }
     }
 }

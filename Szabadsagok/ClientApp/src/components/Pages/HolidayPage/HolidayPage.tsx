@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { memo, useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 import { DateSelectArg } from '@fullcalendar/react';
 import moment from 'moment';
@@ -160,8 +160,8 @@ function mapStateToProps(state :any) {
   };
 }
 
-export default connect(
+export default memo(connect(
   mapStateToProps,
   UserStore.actionCreators
-)(HolidayPage);
+)(HolidayPage));
 

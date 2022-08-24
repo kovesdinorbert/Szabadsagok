@@ -40,26 +40,19 @@ namespace Szabadsagok.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetAllFutureHolidays()
         {
-            GetUserIdFromToken();
+            var result = await _holidayService.GetFutureHolidays();
 
-            List<IncomingHolidayDto> ret;
-            try
-            {
-                ret = _mapper.Map<List<IncomingHolidayDto>>(await _holidayService.GetFutureHolidays());
-            }
-            catch (Exception e)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError);
-            }
-
-            return Ok(ret);
+            return result.MatchFirst(result => Ok(_mapper.Map<List<IncomingHolidayDto>>(result)),
+                                     error => BusinessError(error));
         }
 
         [HttpGet("availableholidayforuser/{userId}")]
         public async Task<IActionResult> GetAvailableHolidaysForUser(int userId)
         {
-            var value = await _holidayService.GetAvailableHolidayNumber(userId);
-            return Ok(value);
+            var result = await _holidayService.GetAvailableHolidayNumber(userId);
+
+            return result.MatchFirst(result => Ok(result),
+                                     error => BusinessError(error));
         }
 
         [HttpPut]
@@ -69,9 +62,7 @@ namespace Szabadsagok.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> CreateHoliday(HolidayRequestDto requestDto)
         {
-            var userId = GetUserIdFromToken();
-
-            var result = await _holidayService.CreateHoliday(_mapper.Map<Holiday>(requestDto), userId);
+            var result = await _holidayService.CreateHoliday(_mapper.Map<Holiday>(requestDto), GetUserIdFromToken());
 
             return result.MatchFirst(result => Ok(),
                                      error => BusinessError(error));

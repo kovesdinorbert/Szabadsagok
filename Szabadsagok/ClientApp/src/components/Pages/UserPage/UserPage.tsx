@@ -1,8 +1,5 @@
 import React, { RefObject, useEffect, useState } from 'react';
 import { connect } from 'react-redux';
-import { DateSelectArg } from '@fullcalendar/react';
-import moment from 'moment';
-import { Toast } from 'primereact/toast';
 import { Button } from 'primereact/button';
 import { UserDataModel } from './UserDataModel';
 import { Dialog } from 'primereact/dialog';
@@ -12,7 +9,6 @@ import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { Guid } from 'guid-typescript';
 import { ConfirmDialog } from 'primereact/confirmdialog';
-import { ToastMessage } from 'primereact/toast';
 import * as UserStore from '../../../store/AppContextStore';
 
 function UserPage(props: any) {
@@ -127,7 +123,6 @@ function UserPage(props: any) {
   }
 
   const updateList = (user: UserDataModel) => {
-    debugger;
     if (!user || !user.id || user.id.toString() === Guid.EMPTY)
       return;
     let list = users;

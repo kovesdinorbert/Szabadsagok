@@ -4,7 +4,6 @@ using Core.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -33,24 +32,16 @@ namespace Szabadsagok.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetYear(int year)
         {
-            var userId = GetUserIdFromToken();
+            var yearConfigResult = await _yearConfigService.GetYearConfigs(year);
 
-            List<YearConfigDto> ret;
-            try
+            if (!yearConfigResult.IsError && yearConfigResult.Value.Any())
             {
-                ret = _mapper.Map<List<YearConfigDto>>(await _yearConfigService.GetYearConfigs(year));
+                var result = await _yearConfigService.FillEmptyYearConfigs(year, GetUserIdFromToken());
 
-                if (!ret.Any())
-                {
-                    ret = _mapper.Map<List<YearConfigDto>>(await _yearConfigService.FillEmptyYearConfigs(year, userId));
-                }
+                return yearConfigResult.MatchFirst(result => Ok(_mapper.Map<List<YearConfigDto>>(result)),
+                                                   error => BusinessError(error));
             }
-            catch (Exception e)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError);
-            }
-
-            return Ok(ret);
+            return NotFound();
         }
 
         [HttpPost]
@@ -59,17 +50,10 @@ namespace Szabadsagok.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> SetYearData(YearConfigDto yearConfig)
         {
-            try
-            {
-                var dayConfig = _mapper.Map<YearConfig>(yearConfig);
-                await _yearConfigService.SetYearData(dayConfig, GetUserIdFromToken());
+            var dayConfig = _mapper.Map<YearConfig>(yearConfig);
+            await _yearConfigService.SetYearData(dayConfig, GetUserIdFromToken());
 
-                return Ok(dayConfig);
-            }
-            catch (Exception e)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError);
-            }
+            return Ok(dayConfig);
         }
     }
 }

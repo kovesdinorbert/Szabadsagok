@@ -35,12 +35,23 @@ namespace Infrastructure.Services
                 return HolidayErrors.FoundOpenedStatusHolidayRequest;
             }
 
-            var yearconfigs = await _yearConfigService.GetYearConfigs(holiday.Start, holiday.End);
+            var yearconfigsResult = await _yearConfigService.GetYearConfigs(holiday.Start, holiday.End);
+
+            if (yearconfigsResult.IsError)
+            {
+                return yearconfigsResult.FirstError;
+            }
 
             holiday.UserId = currentUserId;
-            holiday.HolidayCount = yearconfigs.Where(yc => yc.Type == DayTypeEnum.Workday).Count();
+            holiday.HolidayCount = yearconfigsResult.Value.Where(yc => yc.Type == DayTypeEnum.Workday).Count();
 
-            if ((await GetAvailableHolidayNumber(currentUserId)) - holiday.HolidayCount >= 0)
+            var getAvailableHolidayNumberResult = await GetAvailableHolidayNumber(currentUserId);
+            if (getAvailableHolidayNumberResult.IsError)
+            {
+                return getAvailableHolidayNumberResult.FirstError;
+            }
+
+            if (getAvailableHolidayNumberResult.Value - holiday.HolidayCount >= 0)
             {
                 await _holidayRepository.CreateAsync(holiday, currentUserId);
                 return true;
@@ -65,19 +76,19 @@ namespace Infrastructure.Services
             return true;
         }
 
-        public async Task<int> GetAvailableHolidayNumber(int userId)
+        public async Task<ErrorOr<int>> GetAvailableHolidayNumber(int userId)
         {
             var maxHolidays = (await _holidayConfigRepository.FindAllAsync(hc => hc.UserId == userId)).Sum(hc => hc.MaxHoliday);
             var usedHolidays = (await _holidayRepository.FindAllAsync(h => h.UserId == userId && h.Status == StatusEnum.Accepted)).Sum(h => h.HolidayCount);
             return maxHolidays - usedHolidays;
         }
 
-        public async Task<List<Holiday>> GetHolidaysForUser(int userId)
+        public async Task<ErrorOr<List<Holiday>>> GetHolidaysForUser(int userId)
         {
             return await _holidayRepository.FindAllAsync(h => h.UserId == userId);
         }
 
-        public async Task<List<Holiday>> GetFutureHolidays()
+        public async Task<ErrorOr<List<Holiday>>> GetFutureHolidays()
         {
             var includes = new Func<IQueryable<Holiday>, IQueryable<Holiday>>[]
             {

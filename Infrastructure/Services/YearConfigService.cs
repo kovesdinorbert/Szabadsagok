@@ -1,5 +1,6 @@
 ﻿using Core.Entities;
 using Core.Interfaces;
+using ErrorOr;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,21 +17,21 @@ namespace Infrastructure.Services
             _yearConfigRepository = yearConfigRepository;
         }
 
-        public async Task<List<YearConfig>> GetYearConfigs(int year)
+        public async Task<ErrorOr<List<YearConfig>>> GetYearConfigs(int year)
         {
             var configs = await _yearConfigRepository.FindAllAsync(yc => yc.Year == year);
 
             return configs;
         }
 
-        public async Task<List<YearConfig>> GetYearConfigs(DateTime start, DateTime end)
+        public async Task<ErrorOr<List<YearConfig>>> GetYearConfigs(DateTime start, DateTime end)
         {
             var configs = await _yearConfigRepository.FindAllAsync(yc => yc.Date >= start && yc.Date <= end);
 
             return configs;
         }
 
-        public async Task<List<YearConfig>> FillEmptyYearConfigs(int year, int currentUserId)
+        public async Task<ErrorOr<List<YearConfig>>> FillEmptyYearConfigs(int year, int currentUserId)
         {
             var ret = new List<YearConfig>();
 

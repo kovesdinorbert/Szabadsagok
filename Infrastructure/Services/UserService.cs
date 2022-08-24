@@ -65,14 +65,14 @@ namespace Infrastructure.Services
             return claims;
         }
 
-        public async Task<List<User>> GetUsers()
+        public async Task<ErrorOr<List<User>>> GetUsers()
         {
             var users = await _userRepository.FindAllAsync(u => !u.Deleted, u => u.Include(h => h.Holidays).Include(h => h.HolidayConfigs));
 
             return users;
         }
 
-        public async Task<User> GetUser(int userId)
+        public async Task<ErrorOr<User>> GetUser(int userId)
         {
             return await _userRepository.FindByIdAsync(userId);
         }
@@ -158,9 +158,10 @@ namespace Infrastructure.Services
 
         public async Task DeactivateUser(int userId, int currentUserId)
         {
-            var user = await GetUser(userId);
-            if (user != null)
+            var userResult = await GetUser(userId);
+            if (!userResult.IsError)
             {
+                var user = userResult.Value;
                 user.Deleted = true;
                 await _userRepository.UpdateAsync(user, currentUserId);
             }

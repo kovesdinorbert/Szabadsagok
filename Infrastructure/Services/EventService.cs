@@ -1,5 +1,6 @@
 ﻿using Core.Entities;
 using Core.Interfaces;
+using ErrorOr;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -32,13 +33,13 @@ namespace Infrastructure.Services
             await _eventRepository.UpdateAsync(eventToUpdate, userId);
         }
 
-        public async Task<List<Event>> GetEvents(bool includeNotActive, int userId)
+        public async Task<ErrorOr<List<Event>>> GetEvents(bool includeNotActive)
         {
             var events = await _eventRepository.FindAllAsync(e => includeNotActive || e.IsActive);
             return events;
         }
 
-        public async Task<List<Event>> GetEvents(DateTime start, DateTime end, int userId)
+        public async Task<ErrorOr<List<Event>>> GetEvents(DateTime start, DateTime end)
         {
             var events = await _eventRepository.FindAllAsync(e => e.StartDate >= start && e.EndDate <= end);
             return events;

@@ -12,8 +12,8 @@ namespace Core.Interfaces
         Task<string> GenerateToken(User user);
         Task<ErrorOr<User>> CreateUser(string name, string email, List<RoleEnum> roles, int currentUserId);
         Task<ErrorOr<bool>> UpdateUser(User user, int currentUserId);
-        Task<List<User>> GetUsers();
-        Task<User> GetUser(int userId);
+        Task<ErrorOr<List<User>>> GetUsers();
+        Task<ErrorOr<User>> GetUser(int userId);
         Task<ErrorOr<User>> GetUserByEmail(string email);
         Task DeactivateUser(int userId, int currentUserId);
         Task SetHolidayConfig(int year, int maxHolidays, int userId, int currentUserId);
