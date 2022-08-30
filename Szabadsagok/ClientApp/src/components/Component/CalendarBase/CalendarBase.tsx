@@ -18,20 +18,26 @@ import { DayTypeEnum } from "../../../enums/DayTypeEnum";
 import "./design.css";
 import { EventModel } from "./EventModel";
 import { ICalendarBase } from "./ICalendarBase";
+import { ConfirmDialog } from "primereact/confirmdialog";
 
 const CalendarBase = forwardRef<ICalendarBase, any>((props: any, ref) => {
   const [loaded, setLoaded] = useState<boolean>(false);
   const [events, setEvents] = useState<any>([]);
   const [yearData, setYearData] = useState<YearConfigModel[]>([]);
+  const [rendered, setRendered] = useState<boolean>(false);
+  const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState<boolean>(false);
+  const [toDeleteEventId, setToDeleteEventId] = useState<string>('');
 
   const calendarRef = useRef<FullCalendar>(null);
 
   useEffect(() => {
     if (!props.token) {
-    } else {
+    } else if (!rendered) {
       getDayConfigs();
+      setRendered(true);
+    } else {
     }
-  }, []);
+  }, [rendered, events]);
 
   const getDayConfigs = () => {
     props.setLoadingState(true);
@@ -167,7 +173,62 @@ const CalendarBase = forwardRef<ICalendarBase, any>((props: any, ref) => {
         setYearData(yearData);
       }
     },
+    addNewEvent(event: EventModel) {
+      if (event ) {
+        if (calendarRef == undefined || calendarRef == null) return;
+        if (calendarRef.current == undefined || calendarRef.current == null) return;
+
+        const calendarEvent = {
+          id: event.id,
+          title: event.subject,
+          start: moment(event.startDate).toDate(),
+          end: moment(event.endDate).toDate(),
+          className: "",
+        };
+        events.push(calendarEvent);
+        calendarRef.current.getApi().addEvent(calendarEvent);
+      }
+    },
   }));
+
+  const eventClick = (info: any) => {
+    setToDeleteEventId(info.event.id);
+    setShowDeleteConfirmModal(true);
+  }
+  const hideDeleteDialog = (e: any) => {
+    setShowDeleteConfirmModal(false);
+  }
+  const deleteUser = () => {
+    if (toDeleteEventId && toDeleteEventId !== "") {
+
+      let url = `${process.env.REACT_APP_API_PATH}/event/` + toDeleteEventId.toString();
+      props.setLoadingState(true);
+
+      const requestOptions = {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + props.token
+        },
+      };
+
+      fetch(url, requestOptions)
+        .then(async response => {
+          if (!response.ok) {
+            props.showToastrMessage({severity: 'error', summary:'Sikertelen művelet', detail: 'Sikertelen művelet'});
+          } else {
+            props.showToastrMessage({severity: 'success', summary:'Sikeres művelet', detail: 'Sikeres művelet'});
+            setEvents(events.filter((u: EventModel) => u.id !== toDeleteEventId));
+            calendarRef?.current?.getApi().getEventById(toDeleteEventId)?.remove();
+          }
+          props.setLoadingState(false);
+        })
+        .catch(error => {
+          props.showToastrMessage({severity: 'error', summary:'Sikertelen művelet', detail: 'Sikertelen művelet'});
+          props.setLoadingState(false);
+        });
+    }
+  }
 
   return (
     <div>
@@ -191,10 +252,19 @@ const CalendarBase = forwardRef<ICalendarBase, any>((props: any, ref) => {
           dayCellClassNames={dayRenderer}
           firstDay={1}
           events={events}
+          eventTimeFormat={{
+            hour: '2-digit',
+            minute: '2-digit'
+          }}
+          displayEventTime={true}
+          displayEventEnd={true}
+          eventClick={eventClick}
         />
       ) : (
         <></>
       )}
+      <ConfirmDialog visible={showDeleteConfirmModal} message="Biztos törli az eseményt?" onHide={hideDeleteDialog}
+        header="Megerősítés" icon="pi pi-exclamation-triangle" accept={deleteUser} rejectLabel="Mégse" acceptLabel="Ok"/>
     </div>
   );
 });

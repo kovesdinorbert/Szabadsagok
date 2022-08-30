@@ -154,7 +154,6 @@ function UserPage(props: any) {
           <EditUserPage onModalClose={newUserModalClick} selectedUser={selectedUser} updateListCb={updateList}></EditUserPage>
         </Dialog>
         <Button label="Új felhasználó" icon="pi pi-external-link" onClick={newUserModalClick} />
-        <Button disabled={!formIsValid} className="btn-action" onClick={sendRequest}>Mentés</Button>
         <ConfirmDialog visible={showDeleteConfirmModal} message="Biztos törli a felhasználót?" onHide={hideDeleteDialog}
           header="Megerősítés" icon="pi pi-exclamation-triangle" accept={deleteUser} rejectLabel="Mégse" acceptLabel="Ok"/>
       </React.Fragment>

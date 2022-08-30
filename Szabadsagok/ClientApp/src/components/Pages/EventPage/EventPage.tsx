@@ -4,16 +4,23 @@ import * as AppContextStore from '../../../store/AppContextStore';
 import { Calendar } from 'primereact/calendar';
 import { Button } from 'primereact/button';
 import { EventModel } from './EventModel';
+import InputField from '../../Common/InputField/InputField';
+import { InputFieldModel } from '../../Common/InputField/InputFieldModel';
 
 function EventPage(props: any) {
   const [formIsValid, setFormIsValid] = useState<boolean>(false);
-  const [start, setStart] = useState<any>(null);
-  const [end, setEnd] = useState<any>(null);
+  const [start, setStart] = useState<any>(props.selectedDay.date);
+  const [end, setEnd] = useState<any>(props.selectedDay.date);
+  const [name, setName] = useState<string>('');
+  const [isValidDict, setIsValidDict] = useState<any>({
+    name: false,
+  });
+
   
   useEffect(() => {
     if (!props.token) {
     } else {
-      setFormIsValid(start != null && end != null);
+      setFormIsValid(start != null && end != null && isValidDict.name);
     }
   });
 
@@ -29,8 +36,8 @@ function EventPage(props: any) {
     let newEvent: EventModel = {
       startDate: start,
       endDate: end,
-      description: 'teszt',
-      subject: 'teszt'
+      description: name,
+      subject: name
     };
     const requestOptions = {
       method: 'POST',
@@ -46,29 +53,48 @@ function EventPage(props: any) {
         if (!response.ok) {
           props.showToastrMessage({severity: 'error', summary:'Sikertelen művelet', detail: 'Sikertelen művelet'});
         } else {
+          const data: EventModel = await response.json();
+          props.calendarRef.addNewEvent(data);
           props.showToastrMessage({severity: 'success', summary:'Sikeres művelet', detail: 'Sikeres művelet'});
         }
         props.setLoadingState(false);
         setStart(null);
         setEnd(null);
-        //TODO calendar frissítés az új eventtel
       })
       .catch(error => {
         props.showToastrMessage({severity: 'error', summary:'Sikertelen művelet', detail: 'Sikertelen művelet'});
         props.setLoadingState(false);
       });
   }
+  
+  const setNameInput = (e: string, v: boolean): void => {
+    setIsValidDict({ name: v });
+    setName(e);
+  };
 
+  const confEmail: InputFieldModel = {
+    label: "Cím",
+    id: "cim_id",
+    required: true,
+    icon: "pi-envelope",
+    type: "text",
+  };
+  
     return (
       <React.Fragment>
-        <div className='home-page-block'>
-          <h3>Kezdet</h3>
+        <div>
+          <label>Kezdet</label>
           <Calendar id="time24" value={start} onChange={e => setStart(e.value)} showTime />
         </div>
-        <div className='home-page-block'>
-          <h3>Befejezés</h3>
+        <div>
+          <label>Vége</label>
           <Calendar id="time24" value={end} onChange={e => setEnd(e.value)} showTime />
         </div>
+        <InputField
+          config={confEmail}
+          value={name}
+          onInputValueChange={setNameInput}
+        />
         <Button disabled={!formIsValid} className="btn-action" onClick={sendRequest}>Mentés</Button>
       </React.Fragment>
     );

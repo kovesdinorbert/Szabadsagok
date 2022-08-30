@@ -16,9 +16,10 @@ namespace Infrastructure.Services
             _eventRepository = eventRepository;
         }
 
-        public async Task AddNewEvent(Event newEvent, int userId)
+        public async Task<Event> AddNewEvent(Event newEvent, int userId)
         {
             await _eventRepository.CreateAsync(newEvent, userId);
+            return newEvent;
         }
 
         public async Task DeleteEvent(int eventToDelete, int userId)

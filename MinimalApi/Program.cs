@@ -360,9 +360,9 @@ app.MapPost("/api/event", async ([FromBody] EventDto newEvent,
                                  [FromServices] IDataProtectionMapProvider dataProtectionMapProvider,
                                  [FromServices] IEventService eventService)  =>
 {
-    await eventService.AddNewEvent(mapper.Map<Event>(newEvent), GetUserIdFromToken(user));
+    var e = mapper.Map<EventDto>(await eventService.AddNewEvent(mapper.Map<Event>(newEvent), GetUserIdFromToken(user)));
 
-    return Results.StatusCode(StatusCodes.Status201Created);
+    return Results.Ok(e);
 })
 .RequireAuthorization()
 .WithName("CreateEvent");
