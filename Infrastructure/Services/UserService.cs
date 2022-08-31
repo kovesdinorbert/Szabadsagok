@@ -19,12 +19,12 @@ namespace Infrastructure.Services
 {
     public class UserService : IUserService
     {
-        private readonly IGenericRepository<User> _userRepository;
-        private readonly IGenericRepository<HolidayConfig> _holidayConfigRepository;
+        private readonly IGenericCommandRepository<User> _userRepository;
+        private readonly IGenericCommandRepository<HolidayConfig> _holidayConfigRepository;
         private readonly AppConfiguration _appConfiguration;
 
-        public UserService(IGenericRepository<User> userRepository,
-                           IGenericRepository<HolidayConfig> holidayConfigRepository,
+        public UserService(IGenericCommandRepository<User> userRepository,
+                           IGenericCommandRepository<HolidayConfig> holidayConfigRepository,
                            IOptions<AppConfiguration> appConfiguration)
         {
             _userRepository = userRepository;

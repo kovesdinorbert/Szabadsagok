@@ -57,7 +57,7 @@ namespace Szabadsagok
                         EncryptionAlgorithmKeySize = 128
                     });
 
-            services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+            services.AddScoped(typeof(IGenericCommandRepository<>), typeof(GenericCommandRepository<>));
             services.AddScoped(typeof(IUserService), typeof(UserService));
             services.AddScoped(typeof(IHolidayService), typeof(HolidayService));
             services.AddScoped(typeof(IYearConfigService), typeof(YearConfigService));

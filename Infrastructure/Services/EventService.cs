@@ -9,9 +9,9 @@ namespace Infrastructure.Services
 {
     public class EventService: IEventService
     {
-        private readonly IGenericRepository<Event> _eventRepository;
+        private readonly IGenericCommandRepository<Event> _eventRepository;
 
-        public EventService(IGenericRepository<Event> eventRepository)
+        public EventService(IGenericCommandRepository<Event> eventRepository)
         {
             _eventRepository = eventRepository;
         }

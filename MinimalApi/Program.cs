@@ -2,13 +2,16 @@ using Core.Configuration;
 using Core.Entities;
 using Core.Enums;
 using Core.Interfaces;
+using Core.Queries;
 using Core.Validation;
 using ErrorOr;
 using FluentValidation;
 using Infrastructure.Data;
+using Infrastructure.QueryHandlers;
 using Infrastructure.Repository;
 using Infrastructure.Services;
 using MapsterMapper;
+using MediatR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.DataProtection;
@@ -16,6 +19,7 @@ using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationM
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using System.Reflection;
 using System.Security.Claims;
 using System.Text;
 using SzabadsagolosMinimalApi;
@@ -28,10 +32,11 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.Configure<DbConfiguration>(builder.Configuration.GetSection("DbConfiguration"));
 builder.Services.Configure<AppConfiguration>(builder.Configuration.GetSection("AppConfiguration"));
 
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 var appConfiguration = builder.Configuration.GetSection("AppConfiguration").Get<AppConfiguration>();
-builder.Services.AddDbContext<SzabadsagAppContext>(x => x.UseSqlServer(connectionString));
+var dbConfiguration = builder.Configuration.GetSection("DbConfiguration").Get<DbConfiguration>();
+builder.Services.AddDbContext<SzabadsagAppContext>(x => x.UseSqlServer(dbConfiguration.DbConnection));
 
+builder.Services.AddSingleton<DapperContext>();
 builder.Services.AddDataProtection()
 .UseCustomCryptographicAlgorithms(new CngCbcAuthenticatedEncryptorConfiguration
 {
@@ -40,7 +45,7 @@ builder.Services.AddDataProtection()
     EncryptionAlgorithmKeySize = 128
 });
 
-builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+builder.Services.AddScoped(typeof(IGenericCommandRepository<>), typeof(GenericCommandRepository<>));
 builder.Services.AddScoped(typeof(IUserService), typeof(UserService));
 builder.Services.AddScoped(typeof(IHolidayService), typeof(HolidayService));
 builder.Services.AddScoped(typeof(IYearConfigService), typeof(YearConfigService));
@@ -52,6 +57,8 @@ builder.Services.AddScoped<IValidator<User>, UserValidation>();
 builder.Services.AddScoped<IValidator<Holiday>, HolidayValidation>();
 builder.Services.AddMappings();
 builder.Services.AddCors();
+builder.Services.AddMediatR(typeof(GetAllUserQueryHandler).GetTypeInfo().Assembly);
+builder.Services.AddScoped<IGenericQueryRepository<User>, UserQueryRepository<User>>();
 
 builder.Services.AddAuthorization(cfg => {
     cfg.FallbackPolicy = new AuthorizationPolicyBuilder()
@@ -120,14 +127,15 @@ app.MapPost("/api/user/authenticate", async ([FromBody]LoginResultDto login, [Fr
 
 
 app.MapGet("/api/user/getallusers", async ([FromServices] IUserService userService,
+                                           [FromServices] IMediator mediator,
                                            [FromServices] IMapper mapper)  =>
 {
-    var result = await userService.GetUsers();
+    var result = await mediator.Send(new GetAllUserQuery());
 
-    return result.MatchFirst(result => Results.Ok(mapper.Map<List<UserListDto>>(result)),
-                             error => BusinessError(error));
+    return Results.Ok(mapper.Map<List<UserListDto>>(result));
 })
-.RequireAuthorization()
+//.RequireAuthorization()
+.AllowAnonymous()
 .WithName("GetAllUsers");
 
 

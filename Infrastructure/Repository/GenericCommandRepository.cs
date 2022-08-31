@@ -10,12 +10,12 @@ using System.Threading.Tasks;
 
 namespace Infrastructure.Repository
 {
-    public class GenericRepository<T> : IGenericRepository<T> where T : class
+    public class GenericCommandRepository<T> : IGenericCommandRepository<T> where T : class
     {
         private Data.SzabadsagAppContext _context = null;
         private DbSet<T> _table = null;
 
-        public GenericRepository(Data.SzabadsagAppContext context)
+        public GenericCommandRepository(Data.SzabadsagAppContext context)
         {
             _context = context;
             _table = _context.Set<T>();

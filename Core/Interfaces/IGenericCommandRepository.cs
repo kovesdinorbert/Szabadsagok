@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Core.Interfaces
 {
-    public interface IGenericRepository<T>
+    public interface IGenericCommandRepository<T>
     {
         Task<T> FindByIdAsync(int id);
         Task<List<T>> FindAllAsync(Expression<Func<T, bool>> where, params Func<IQueryable<T>, IQueryable<T>>[] includes);

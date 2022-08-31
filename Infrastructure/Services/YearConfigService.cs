@@ -10,9 +10,9 @@ namespace Infrastructure.Services
 {
     public class YearConfigService : IYearConfigService
     {
-        private readonly IGenericRepository<YearConfig> _yearConfigRepository;
+        private readonly IGenericCommandRepository<YearConfig> _yearConfigRepository;
 
-        public YearConfigService(IGenericRepository<YearConfig> yearConfigRepository)
+        public YearConfigService(IGenericCommandRepository<YearConfig> yearConfigRepository)
         {
             _yearConfigRepository = yearConfigRepository;
         }

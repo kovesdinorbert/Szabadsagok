@@ -13,12 +13,12 @@ namespace Infrastructure.Services
 {
     public class HolidayService : IHolidayService
     {
-        private readonly IGenericRepository<Holiday> _holidayRepository;
-        private readonly IGenericRepository<HolidayConfig> _holidayConfigRepository;
+        private readonly IGenericCommandRepository<Holiday> _holidayRepository;
+        private readonly IGenericCommandRepository<HolidayConfig> _holidayConfigRepository;
         private readonly IYearConfigService _yearConfigService;
 
-        public HolidayService(IGenericRepository<Holiday> holidayRepository,
-                              IGenericRepository<HolidayConfig> holidayConfigRepository,
+        public HolidayService(IGenericCommandRepository<Holiday> holidayRepository,
+                              IGenericCommandRepository<HolidayConfig> holidayConfigRepository,
                               IYearConfigService yearConfigService)
         {
             _holidayRepository = holidayRepository;
