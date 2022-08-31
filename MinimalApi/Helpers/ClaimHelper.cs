@@ -15,5 +15,17 @@ namespace SzabadsagolosMinimalApi
 
             return string.Empty;
         }
+
+        public static int GetUserIdFromToken(ClaimsPrincipal user)
+        {
+            var idStr = GetClaimData(user, ClaimTypes.NameIdentifier);
+
+            if (string.IsNullOrWhiteSpace(idStr) || !int.TryParse(idStr, out var userId))
+            {
+                throw new System.Exception("Unauthorized user!");
+            }
+
+            return userId;
+        }
     }
 }
