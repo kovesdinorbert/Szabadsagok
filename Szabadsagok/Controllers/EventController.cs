@@ -71,7 +71,7 @@ namespace Szabadsagok.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> Create([FromBody] EventDto newEvent)
         {
-            var e = _mapper.Map<EventDto>(await _eventService.AddNewEvent(_mapper.Map<Event>(newEvent), GetUserIdFromToken(user)));
+            var e = _mapper.Map<EventDto>(await _eventService.AddNewEvent(_mapper.Map<Event>(newEvent), GetUserIdFromToken()));
 
             return Ok(e);
         }

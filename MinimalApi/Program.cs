@@ -2,7 +2,9 @@ using Core.Configuration;
 using Core.Entities;
 using Core.Enums;
 using Core.Interfaces;
+using Core.Validation;
 using ErrorOr;
+using FluentValidation;
 using Infrastructure.Data;
 using Infrastructure.Repository;
 using Infrastructure.Services;
@@ -17,6 +19,10 @@ using Microsoft.IdentityModel.Tokens;
 using System.Security.Claims;
 using System.Text;
 using SzabadsagolosMinimalApi;
+
+const string ADMINPOLICY = "Admin";
+const string ACCEPTERPOLICY = "Accepter";
+const string COMMONPOLICY = "COMMON";
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.Configure<DbConfiguration>(builder.Configuration.GetSection("DbConfiguration"));
@@ -41,6 +47,9 @@ builder.Services.AddScoped(typeof(IYearConfigService), typeof(YearConfigService)
 builder.Services.AddScoped(typeof(IEmailService), typeof(EmailService));
 builder.Services.AddScoped(typeof(IEventService), typeof(EventService));
 builder.Services.AddSingleton(typeof(IDataProtectionMapProvider), typeof(DataProtectionMapProvider));
+builder.Services.AddScoped<IValidator<Event>, EventValidation>();
+builder.Services.AddScoped<IValidator<User>, UserValidation>();
+builder.Services.AddScoped<IValidator<Holiday>, HolidayValidation>();
 builder.Services.AddMappings();
 builder.Services.AddCors();
 
@@ -48,6 +57,9 @@ builder.Services.AddAuthorization(cfg => {
     cfg.FallbackPolicy = new AuthorizationPolicyBuilder()
         .RequireAuthenticatedUser()
         .Build();
+    cfg.AddPolicy(ADMINPOLICY, policy => policy.RequireClaim(ClaimTypes.Role, RoleEnum.Admin.ToString()));
+    cfg.AddPolicy(ACCEPTERPOLICY, policy => policy.RequireClaim(ClaimTypes.Role, RoleEnum.Accepter.ToString()));
+    cfg.AddPolicy(COMMONPOLICY, policy => policy.RequireClaim(ClaimTypes.Role, RoleEnum.Common.ToString()));
 });
 
 builder.Services.AddAuthentication(opt => {
@@ -69,6 +81,10 @@ builder.Services.AddAuthentication(opt => {
 
 
 var app = builder.Build();
+
+app.UseMiddleware<ValidationExceptionMiddleware>();
+
+
 
 if (app.Environment.IsDevelopment())
 {
@@ -132,30 +148,44 @@ app.MapPost("/api/user/setholiday/{userId}/{year}/{count}", async (int userId, i
 
 app.MapPost("/api/user/updateuser", async ([FromBody]UserDataDto userData,
                                  ClaimsPrincipal user,
+                                 IValidator<User> validator,
                                  [FromServices] IUserService userService,
                                  [FromServices] IMapper mapper)  =>
 {
+    var validation = await validator.ValidateAsync(mapper.Map<User>(userData));
+    if (!validation.IsValid)
+    {
+        return Results.BadRequest(validation.Errors);
+    }
+
     var result = await userService.UpdateUser(mapper.Map<User>(userData), GetUserIdFromToken(user));
 
     return result.MatchFirst(result => Results.Ok(),
                              error => BusinessError(error));
 })
-.RequireAuthorization()
+.RequireAuthorization(ADMINPOLICY)
 .WithName("UpdateUser");
 
 
 
 app.MapPut("/api/user/createuser", async ([FromBody]UserDataDto userData,
+                                 IValidator<User> validator,
                                  ClaimsPrincipal user,
                                  [FromServices] IUserService userService,
                                  [FromServices] IMapper mapper)  =>
 {
+    var validation = await validator.ValidateAsync(mapper.Map<User>(userData));
+    if (!validation.IsValid)
+    {
+        return Results.BadRequest(validation.Errors);
+    }
+
     var result = await userService.CreateUser(userData.Name, userData.Email, userData.Roles, GetUserIdFromToken(user));
 
     return result.MatchFirst(result => Results.Ok(mapper.Map<UserDataDto>(result)),
                              error => BusinessError(error));
 })
-.RequireAuthorization()
+.RequireAuthorization(ADMINPOLICY)
 .WithName("CreateUser");
 
 
@@ -170,7 +200,7 @@ app.MapDelete("/api/user/{id}", async (string id,
 
     return Results.Ok();
 })
-.RequireAuthorization()
+.RequireAuthorization(ADMINPOLICY)
 .WithName("DeleteUser");
 
 
@@ -224,7 +254,7 @@ app.MapPost("/api/year", async ([FromBody] YearConfigDto yearConfig,
 
     return Results.Ok(dayConfig);
 })
-.RequireAuthorization()
+.RequireAuthorization(ADMINPOLICY)
 .WithName("SetYearData");
 
 
@@ -271,7 +301,7 @@ app.MapPut("/api/holiday", async ([FromBody] HolidayRequestDto requestDto,
     return result.MatchFirst(result => Results.Ok(),
                              error => BusinessError(error));
 })
-.RequireAuthorization()
+.RequireAuthorization(COMMONPOLICY)
 .WithName("CreateHoliday");
 
 app.MapDelete("/api/holiday", async (string id,
@@ -287,7 +317,7 @@ app.MapDelete("/api/holiday", async (string id,
     return result.MatchFirst(result => Results.Ok(),
                              error => BusinessError(error));
 })
-.RequireAuthorization()
+.RequireAuthorization(COMMONPOLICY)
 .WithName("DeleteHoliday");
 
 
@@ -304,7 +334,7 @@ app.MapPost("/api/holiday", async (int holidayId, StatusEnum status,
     return result.MatchFirst(result => Results.Ok(),
                              error => BusinessError(error));
 })
-.RequireAuthorization()
+.RequireAuthorization(ACCEPTERPOLICY)
 .WithName("UpdateHolidayStatus");
 
 
@@ -329,6 +359,7 @@ app.MapGet("/api/event/{start}/{end}", async (DateTime start, DateTime end,
                                  [FromServices] IDataProtectionMapProvider dataProtectionMapProvider,
                                  [FromServices] IEventService eventService)  =>
 {
+    
     var result = await eventService.GetEvents(start, end);
 
     return result.MatchFirst(result => Results.Ok(mapper.Map<List<EventDto>>(result)),
@@ -349,22 +380,29 @@ app.MapDelete("/api/event/{id}", async (string id,
 
     return Results.NoContent();
 })
-.RequireAuthorization()
+.RequireAuthorization(ADMINPOLICY)
 .WithName("DeleteEvent");
 
 
 
 app.MapPost("/api/event", async ([FromBody] EventDto newEvent,
+                                 IValidator<Event> validator,
                                  ClaimsPrincipal user,
                                  [FromServices] IMapper mapper,
                                  [FromServices] IDataProtectionMapProvider dataProtectionMapProvider,
                                  [FromServices] IEventService eventService)  =>
 {
+    var validation = await validator.ValidateAsync(mapper.Map<Event>(newEvent));
+    if (!validation.IsValid)
+    {
+        return Results.BadRequest(validation.Errors);
+    }
+
     var e = mapper.Map<EventDto>(await eventService.AddNewEvent(mapper.Map<Event>(newEvent), GetUserIdFromToken(user)));
 
     return Results.Ok(e);
 })
-.RequireAuthorization()
+.RequireAuthorization(ADMINPOLICY)
 .WithName("CreateEvent");
 
 
