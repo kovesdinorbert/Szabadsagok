@@ -1,25 +1,3 @@
-using Core.Configuration;
-using Core.Entities;
-using Core.Enums;
-using Core.Interfaces;
-using Core.Validation;
-using FluentValidation;
-using Infrastructure.Data;
-using Infrastructure.Repository;
-using Infrastructure.Services;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.DataProtection;
-using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
-using MinimalApi.Endpoints;
-using MinimalApi.Helpers;
-using System.Security.Claims;
-using System.Text;
-using SzabadsagolosMinimalApi;
-
-
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.Configure<AppConfiguration>(builder.Configuration.GetSection("AppConfiguration"));
 
@@ -35,16 +13,7 @@ builder.Services.AddDataProtection()
     EncryptionAlgorithmKeySize = 128
 });
 
-builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
-builder.Services.AddScoped(typeof(IUserService), typeof(UserService));
-builder.Services.AddScoped(typeof(IHolidayService), typeof(HolidayService));
-builder.Services.AddScoped(typeof(IYearConfigService), typeof(YearConfigService));
-builder.Services.AddScoped(typeof(IEmailService), typeof(EmailService));
-builder.Services.AddScoped(typeof(IEventService), typeof(EventService));
-builder.Services.AddSingleton(typeof(IDataProtectionMapProvider), typeof(DataProtectionMapProvider));
-builder.Services.AddScoped<IValidator<Event>, EventValidation>();
-builder.Services.AddScoped<IValidator<User>, UserValidation>();
-builder.Services.AddScoped<IValidator<Holiday>, HolidayValidation>();
+builder.Services.RegisterAppServices();
 builder.Services.AddMappings();
 builder.Services.AddCors();
 

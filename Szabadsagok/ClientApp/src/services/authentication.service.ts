@@ -76,6 +76,15 @@ export default class AuthenticationService  {
     //     localStorage.removeItem('currentUser');
     //     this.currentUserSubject.next({email:"", token:"", phoneNumber:""});
     // }
+    getEmailFromAuth0(token: string|undefined): string{
+      if (token && token !== "") {
+        const jwtData = token.split('.')[1];
+        const decodedJwtJsonData = window.atob(jwtData);
+        const decodedJwtData = JSON.parse(decodedJwtJsonData);
+        return  decodedJwtData["email"].toString();
+      }
+      return "";
+    }
 
     isInRole(token: string, role: string) {
       if (token && token !== "") {

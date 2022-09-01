@@ -1,9 +1,4 @@
-﻿using Core.Entities;
-using Core.Enums;
-using Core.Interfaces;
-using Mapster;
-
-namespace SzabadsagolosMinimalApi
+﻿namespace SzabadsagolosMinimalApi
 {
     public class MappingConfig : IRegister
     {

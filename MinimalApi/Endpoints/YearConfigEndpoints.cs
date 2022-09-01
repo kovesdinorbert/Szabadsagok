@@ -1,11 +1,4 @@
-﻿using Core.Entities;
-using Core.Interfaces;
-using FluentValidation;
-using MapsterMapper;
-using Microsoft.AspNetCore.Mvc;
-using MinimalApi.Helpers;
-using System.Security.Claims;
-using SzabadsagolosMinimalApi;
+﻿using FluentValidation;
 
 namespace MinimalApi.Endpoints
 {

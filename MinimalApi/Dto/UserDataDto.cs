@@ -1,6 +1,4 @@
-﻿using Core.Enums;
-
-namespace SzabadsagolosMinimalApi
+﻿namespace SzabadsagolosMinimalApi
 {
     public class UserDataDto : IHasIdDto
     {

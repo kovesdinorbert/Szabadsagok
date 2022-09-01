@@ -1,6 +1,4 @@
-﻿using System.Security.Claims;
-
-namespace SzabadsagolosMinimalApi
+﻿namespace SzabadsagolosMinimalApi
 {
     public static class ClaimHelper
     {

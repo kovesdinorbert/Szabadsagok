@@ -1,48 +1,43 @@
-import * as React from 'react';
-import { Collapse, Container, Navbar, NavbarBrand, NavbarToggler, NavItem, NavLink } from 'reactstrap';
-import { Link } from 'react-router-dom';
-import './NavMenu.css';
+import React from 'react';
+import { Menubar } from 'primereact/menubar';
+import { InputText } from 'primereact/inputtext';
 
-export default class NavMenu extends React.PureComponent<{}, { isOpen: boolean }> {
-    public state = {
-        isOpen: false
-    };
+export default function NavMenu() {
+    const items = [
+        {
+            label: 'Nyitólap',
+            icon: 'pi pi-fw pi-calendar',
+            url: '/'
+        },
+        {
+            label: 'Új szabadság',
+            icon: 'pi pi-fw pi-pencil',
+            url: '/request'
+        },
+        {
+            label: 'Felhasználók',
+            icon: 'pi pi-fw pi-user',
+            url: '/users'
+        },
+        {
+            label: 'Év konfigurálás',
+            icon: 'pi pi-fw pi-calendar-times',
+            url: '/configyear'
+        },
+        {
+            label: 'Temp login',
+            icon: 'pi pi-fw pi-power-off',
+            url: '/login'
+        }
+    ];
 
-    public render() {
-        return (
-            <header>
-                <Navbar className="navbar-expand-sm navbar-toggleable-sm border-bottom box-shadow mb-3" light>
-                    <Container>
-                        <NavbarBrand tag={Link} to="/">Szabadság app</NavbarBrand>
-                        <NavbarToggler onClick={this.toggle} className="mr-2"/>
-                        <Collapse className="d-sm-inline-flex flex-sm-row-reverse" isOpen={this.state.isOpen} navbar>
-                            <ul className="navbar-nav flex-grow">
-                                <NavItem>
-                                    <NavLink tag={Link} className="text-light" to="/">Nyitólap</NavLink>
-                                </NavItem>
-                                <NavItem>
-                                    <NavLink tag={Link} className="text-light" to="/request">Új szabadság</NavLink>
-                                </NavItem>
-                                <NavItem>
-                                    <NavLink tag={Link} className="text-light" to="/users">Felhasználók</NavLink>
-                                </NavItem>
-                                <NavItem>
-                                    <NavLink tag={Link} className="text-light" to="/configyear">Év konfigurálás</NavLink>
-                                </NavItem>
-                                <NavItem>
-                                    <NavLink tag={Link} className="text-light" to="/login">Temp login</NavLink>
-                                </NavItem>
-                            </ul>
-                        </Collapse>
-                    </Container>
-                </Navbar>
-            </header>
-        );
-    }
+    const start = <label className="mr-2">Szabadság app</label>;
 
-    private toggle = () => {
-        this.setState({
-            isOpen: !this.state.isOpen
-        });
-    }
+    return (
+        <div>
+            <div className="card">
+                <Menubar model={items} start={start}/>
+            </div>
+        </div>
+    );
 }

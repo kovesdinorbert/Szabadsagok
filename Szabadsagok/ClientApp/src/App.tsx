@@ -17,9 +17,12 @@ import HomePage from './components/Pages/HomePage/HomePage';
 import TempLoginPage from './components/Pages/TempLoginPage/templogin';
 import { RoleEnum } from './enums/RoleEnum';
 import { connect } from 'react-redux';
+import { useAuth0 } from '@auth0/auth0-react';
 
 
 function Appli(props: any) {
+  const { loginWithRedirect } = useAuth0();
+  const { logout } = useAuth0();
     const authenticationService: AuthenticationService = new AuthenticationService();
     return(
     <Layout>
@@ -29,6 +32,10 @@ function Appli(props: any) {
         <Route path='/users' component={UserPage} />
         <Route path='/configyear' component={ConfigYearPage} />
         <Route path='/login' component={TempLoginPage} />
+        <button onClick={() => loginWithRedirect()}>Log In</button>;
+        <button onClick={() => logout({ returnTo: "http://localhost:3000" })}>
+      Log Out
+    </button>
     </Layout>)
 };
 

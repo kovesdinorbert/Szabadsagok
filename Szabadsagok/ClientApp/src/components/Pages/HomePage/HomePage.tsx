@@ -13,13 +13,15 @@ import "primeicons/primeicons.css";                                //icons
 import { Dialog } from 'primereact/dialog';
 import moment from 'moment';
 import { ICalendarBase } from '../../Component/CalendarBase/ICalendarBase';
+import { useLocation } from 'react-router';
 
 export interface IState {
 }
 
 function HomePage(props: any) {
 
-  
+  // const [searchParams, setSearchParams] = useSearchParams();
+
   const [showEventModal, setShowEventModal] = useState<boolean>(false);
   const [selectedDay, setSelectedDay] = useState<any>(null);
   

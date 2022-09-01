@@ -11,6 +11,9 @@ import { Guid } from 'guid-typescript';
 import * as UserStore from '../../../store/AppContextStore';
 import { RoleEnum } from '../../../enums/RoleEnum';
 import moment from 'moment';
+import AuthenticationService from '../../../services/authentication.service';
+import qs from 'qs';
+import { useAuth0 } from '@auth0/auth0-react';
 
 class TempLoginPage extends React.Component<any> {
 
@@ -30,6 +33,10 @@ class TempLoginPage extends React.Component<any> {
   }
   
   componentDidMount() {
+    const authenticationService: AuthenticationService = new AuthenticationService();
+    const auth0_token = qs.parse(this.props.location.search, { ignoreQueryPrefix: true }).session_token;
+    this.email = authenticationService.getEmailFromAuth0(auth0_token?.toString());
+    this.auth();
   }
 
   private setEmail(e: string, v: boolean): void {
@@ -60,11 +67,14 @@ class TempLoginPage extends React.Component<any> {
     fetch(url, requestOptions)
       .then(async response => {
         if (!response.ok) {
-          this.props.showToastrMessage({severity: 'error', summary:'Sikertelen művelet', detail: 'Sikertelen művelet'});
+          if (response.status == 401) {
+            this.props.showToastrMessage({severity: 'error', summary:'Nem jogosult user', detail: 'Nem jogosult user'});
+          }
+          this.props.removeToken();
+          useAuth0().logout();
         } else {
           response.json().then((resp: any) => {
             this.token = resp.token;
-            debugger;
             this.props.saveToken(this.token);
             this.props.showToastrMessage({severity: 'succcess', summary:'Sikeres művelet', detail: 'Sikeres művelet'});
           });

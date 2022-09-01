@@ -1,5 +1,4 @@
-﻿using Mapster;
-using MapsterMapper;
+﻿using MapsterMapper;
 using System.Reflection;
 
 namespace SzabadsagolosMinimalApi

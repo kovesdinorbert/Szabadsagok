@@ -1,5 +1,4 @@
-﻿
-namespace SzabadsagolosMinimalApi
+﻿namespace SzabadsagolosMinimalApi
 {
     public class IncomingHolidayDto
     {
