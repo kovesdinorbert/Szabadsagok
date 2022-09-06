@@ -11,7 +11,7 @@ namespace MinimalApi.Endpoints
                 .WithName("Authenticate");
 
             app.MapGet("/api/user/getallusers", GetAllUsers)
-                .RequireAuthorization()
+                .AllowAnonymous()
                 .WithName("GetAllUsers");
 
             app.MapPost("/api/user/setholiday/{userId}/{year}/{count}", SetHoliday)
@@ -53,10 +53,7 @@ namespace MinimalApi.Endpoints
 
         internal async Task<IResult> GetAllUsers(IUserService userService, IMapper mapper)
         {
-            var result = await userService.GetUsers();
-
-            return result.MatchFirst(result => Results.Ok(mapper.Map<List<UserListDto>>(result)),
-                                     error => BusinessErrorHandler.BusinessError(error));
+            return Results.Ok("OK");
         }
 
         internal async Task<IResult> SetHoliday(int userId, int year, int count,

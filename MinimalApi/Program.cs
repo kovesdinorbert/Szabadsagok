@@ -1,3 +1,5 @@
+using System.Reflection.Metadata.Ecma335;
+
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.Configure<AppConfiguration>(builder.Configuration.GetSection("AppConfiguration"));
 
@@ -21,9 +23,6 @@ builder.Services.AddAuthorization(cfg => {
     cfg.FallbackPolicy = new AuthorizationPolicyBuilder()
         .RequireAuthenticatedUser()
         .Build();
-    cfg.AddPolicy(RoleConstants.ADMINPOLICY, policy => policy.RequireClaim(ClaimTypes.Role, RoleEnum.Admin.ToString()));
-    cfg.AddPolicy(RoleConstants.ACCEPTERPOLICY, policy => policy.RequireClaim(ClaimTypes.Role, RoleEnum.Accepter.ToString()));
-    cfg.AddPolicy(RoleConstants.COMMONPOLICY, policy => policy.RequireClaim(ClaimTypes.Role, RoleEnum.Common.ToString()));
 });
 
 builder.Services.AddAuthentication(opt => {
@@ -43,16 +42,13 @@ builder.Services.AddAuthentication(opt => {
     };
 });
 
-builder.Services.AddEndpointDefinitions(typeof(UserEndpoints));
 
 
 var app = builder.Build();
 
-app.UseEndpointDefinitions();
-
-app.UseMiddleware<ValidationExceptionMiddleware>();
-
-
+app.MapGet("/api/user/getallusers", () => Results.Ok("OK") )
+    .AllowAnonymous()
+    .WithName("GetAllUsers");
 
 if (app.Environment.IsDevelopment())
 {
@@ -61,7 +57,5 @@ app.UseCors(x => x.AllowAnyOrigin()
                   .AllowAnyMethod()
                   .AllowAnyHeader());
 
-app.UseAuthentication();
-app.UseAuthorization();
 
 app.Run();

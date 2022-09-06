@@ -9,7 +9,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Core", "Core\Core.csproj", 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Infrastructure", "Infrastructure\Infrastructure.csproj", "{1B12320B-9968-4A7D-97A3-7149C9439E6A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MinimalApi", "MinimalApi\MinimalApi.csproj", "{9036C01B-6026-477A-B956-F2678DDDD12F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MinimalApi", "MinimalApi\MinimalApi.csproj", "{9036C01B-6026-477A-B956-F2678DDDD12F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NBomberTest", "NBomber\NBomberTest.csproj", "{F88C6D39-E336-45D5-8BBF-38D8C3026C61}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +35,10 @@ Global
 		{9036C01B-6026-477A-B956-F2678DDDD12F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9036C01B-6026-477A-B956-F2678DDDD12F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9036C01B-6026-477A-B956-F2678DDDD12F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F88C6D39-E336-45D5-8BBF-38D8C3026C61}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F88C6D39-E336-45D5-8BBF-38D8C3026C61}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F88C6D39-E336-45D5-8BBF-38D8C3026C61}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F88C6D39-E336-45D5-8BBF-38D8C3026C61}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

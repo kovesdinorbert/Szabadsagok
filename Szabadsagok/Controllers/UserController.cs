@@ -62,15 +62,13 @@ namespace Szabadsagok.Controllers
         //}
 
         [HttpGet("getallusers")]
+        [AllowAnonymous]
         [ProducesResponseType(typeof(IEnumerable<UserListDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetAllUsers()
         {
-            var result = await _userService.GetUsers();
-
-            return result.MatchFirst(result => Ok(_mapper.Map<List<UserListDto>>(result)),
-                                     error => BusinessError(error));
+            return Ok("OK");
         }
 
         [HttpPost("setholiday/{userId}/{year}/{count}")]
