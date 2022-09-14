@@ -2,38 +2,47 @@
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Columns;
 using BenchmarkDotNet.Configs;
+using BenchmarkDotNet.Jobs;
 using BenchmarkDotNet.Loggers;
 using BenchmarkDotNet.Running;
 using BenchmarkDotNet.Validators;
 using MappingBenchmark;
 using Mapster;
-using MapsterMapper;
-using Microsoft.Diagnostics.Tracing.StackSources;
 using Mapper = MapsterMapper.Mapper;
 
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+[SimpleJob(RuntimeMoniker.Net60)]
+[SimpleJob(RuntimeMoniker.Net70)]
 public class Program
 {
     public static void Main(string[] args)
     {
         var config = new ManualConfig()
-.WithOptions(ConfigOptions.DisableOptimizationsValidator)
-.AddValidator(JitOptimizationsValidator.DontFailOnError)
-.AddLogger(ConsoleLogger.Default)
-.AddColumnProvider(DefaultColumnProviders.Instance);
+                            .WithOptions(ConfigOptions.DisableOptimizationsValidator)
+                            .AddValidator(JitOptimizationsValidator.DontFailOnError)
+                            .AddLogger(ConsoleLogger.Default)
+                            .AddColumnProvider(DefaultColumnProviders.Instance);
         var summary = BenchmarkRunner.Run<Functions>(config);
 
         Console.ReadKey();
     }
-
 }
+
+[SimpleJob(RuntimeMoniker.Net60)]
+[SimpleJob(RuntimeMoniker.Net70)]
 public class Functions
 {
     private List<EventDto> dtoList { get; set;  } = new List<EventDto>();
     private TypeAdapterConfig config { get; set; } = new TypeAdapterConfig();
     private Mapper _mapper { get; set; }
     private AutoMapper.IMapper _automapper { get; set; }
+
     public Functions()
     {
+
         var dto = new EventDto()
         {
             Id = "1",

@@ -1,4 +1,6 @@
-﻿namespace MappingBenchmark
+﻿using System;
+
+namespace MappingBenchmark
 {
     internal class EventModel
     {
