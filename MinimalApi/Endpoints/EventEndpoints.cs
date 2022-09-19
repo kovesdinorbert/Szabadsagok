@@ -59,13 +59,13 @@ namespace MinimalApi.Endpoints
         }
 
         internal async Task<IResult> CreateEvent(EventDto newEvent,
-                                                 IValidator<Event> validator,
+                                                 IValidator<EventDto> validator,
                                                  ClaimsPrincipal user,
                                                  IMapper mapper,
                                                  IDataProtectionMapProvider dataProtectionMapProvider,
                                                  IEventService eventService)
         {
-            var validation = await validator.ValidateAsync(mapper.Map<Event>(newEvent));
+            var validation = await validator.ValidateAsync(newEvent);
             if (!validation.IsValid)
             {
                 return Results.BadRequest(validation.Errors);

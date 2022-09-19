@@ -83,7 +83,8 @@ function EditUserPage(props: any) {
 
     let url = ``;
     let userDataReq: UserDataModel = user;
-    userDataReq.roles = user.roles;
+    // userDataReq.roles = user.roles;
+    userDataReq.roles = [];
     let holidayNumber: HolidayForYearModel = {
       year: moment().year(),
       maxHoliday: year,

@@ -1,9 +1,8 @@
-﻿using Core.Entities;
-using FluentValidation;
+﻿using FluentValidation;
 
-namespace Core.Validation
+namespace MinimalApi.Helpers.Validation
 {
-    public class UserValidation : AbstractValidator<User>
+    public class UserValidation : AbstractValidator<UserDataDto>
     {
         public UserValidation()
         {

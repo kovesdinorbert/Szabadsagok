@@ -1,4 +1,5 @@
 ﻿using FluentValidation;
+using MinimalApi.Helpers;
 
 namespace MinimalApi.Endpoints
 {
@@ -20,10 +21,12 @@ namespace MinimalApi.Endpoints
 
             app.MapPost("/api/user/updateuser", UpdateUser)
                 .RequireAuthorization(RoleConstants.ADMINPOLICY)
+                .AddEndpointFilter<ValidationFilter<UserDataDto>>()
                 .WithName("UpdateUser");
 
             app.MapPut("/api/user/createuser", CreateUser)
                 .RequireAuthorization(RoleConstants.ADMINPOLICY)
+                .AddEndpointFilter<ValidationFilter<UserDataDto>>()
                 .WithName("CreateUser");
 
             app.MapDelete("/api/user/{id}", DeleteUser)
@@ -70,16 +73,9 @@ namespace MinimalApi.Endpoints
 
         internal async Task<IResult> UpdateUser(UserDataDto userData,
                                                 ClaimsPrincipal user,
-                                                IValidator<User> validator,
                                                 IUserService userService,
                                                 IMapper mapper)
         {
-            var validation = await validator.ValidateAsync(mapper.Map<User>(userData));
-            if (!validation.IsValid)
-            {
-                return Results.BadRequest(validation.Errors);
-            }
-
             var result = await userService.UpdateUser(mapper.Map<User>(userData), ClaimHelper.GetUserIdFromToken(user));
 
             return result.MatchFirst(result => Results.Ok(),
@@ -87,17 +83,10 @@ namespace MinimalApi.Endpoints
         }
 
         internal async Task<IResult> CreateUser(UserDataDto userData,
-                                                IValidator<User> validator,
                                                 ClaimsPrincipal user,
                                                 IUserService userService,
                                                 IMapper mapper)
         {
-            var validation = await validator.ValidateAsync(mapper.Map<User>(userData));
-            if (!validation.IsValid)
-            {
-                return Results.BadRequest(validation.Errors);
-            }
-
             var result = await userService.CreateUser(userData.Name, userData.Email, userData.Roles, ClaimHelper.GetUserIdFromToken(user));
 
             return result.MatchFirst(result => Results.Ok(mapper.Map<UserDataDto>(result)),

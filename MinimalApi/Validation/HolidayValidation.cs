@@ -1,10 +1,8 @@
-﻿using Core.Entities;
-using FluentValidation;
-using System;
+﻿using FluentValidation;
 
-namespace Core.Validation
+namespace MinimalApi.Helpers.Validation
 {
-    public class HolidayValidation : AbstractValidator<Holiday>
+    public class HolidayValidation : AbstractValidator<HolidayRequestDto>
     {
         public HolidayValidation()
         {

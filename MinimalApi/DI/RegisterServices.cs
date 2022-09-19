@@ -1,7 +1,7 @@
-﻿using Core.Validation;
-using FluentValidation;
+﻿using FluentValidation;
 using Infrastructure.Repository;
 using Infrastructure.Services;
+using MinimalApi.Helpers.Validation;
 
 namespace MinimalApi.DI
 {
@@ -16,9 +16,9 @@ namespace MinimalApi.DI
             services.AddScoped(typeof(IEmailService), typeof(EmailService));
             services.AddScoped(typeof(IEventService), typeof(EventService));
             services.AddSingleton(typeof(IDataProtectionMapProvider), typeof(DataProtectionMapProvider));
-            services.AddScoped<IValidator<Event>, EventValidation>();
-            services.AddScoped<IValidator<User>, UserValidation>();
-            services.AddScoped<IValidator<Holiday>, HolidayValidation>();
+            services.AddScoped<IValidator<EventDto>, EventValidation>();
+            services.AddScoped<IValidator<UserDataDto>, UserValidation>();
+            services.AddScoped<IValidator<HolidayRequestDto>, HolidayValidation>();
         }
     }
 }
