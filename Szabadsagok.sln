@@ -9,7 +9,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Core", "Core\Core.csproj", 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Infrastructure", "Infrastructure\Infrastructure.csproj", "{1B12320B-9968-4A7D-97A3-7149C9439E6A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MinimalApi", "MinimalApi\MinimalApi.csproj", "{9036C01B-6026-477A-B956-F2678DDDD12F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MA", "MinimalApi\MA.csproj", "{9036C01B-6026-477A-B956-F2678DDDD12F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
